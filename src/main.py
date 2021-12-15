@@ -1,5 +1,6 @@
 # This is a sample Python script.
 import excelExtract
+import corpusTesting
 
 # Press Umschalt+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
@@ -13,6 +14,7 @@ def print_hi(name):
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     print_hi('PyCharm')
-    excelExtract.test('CMES')
+    corpusTesting.Test1()
+    #excelExtract.test('CMES')
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
