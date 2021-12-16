@@ -1,7 +1,7 @@
 import openpyxl
 import os
 import re
-import pandas as pd
+# import pandas as pd
 
 os.getcwd()
 
