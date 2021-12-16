@@ -5,7 +5,7 @@ import pandas as pd
 
 os.getcwd()
 
-os.chdir('C:/Users/Paul/Desktop/Temp') #TODO directory and file location needs to be done properly i.e. relative and in the project
+os.chdir('../resources')
 
 
 def test(LF):
@@ -21,7 +21,7 @@ def test(LF):
     ps = openpyxl.load_workbook('all-nov-21.xlsx')
     sheets = ps.sheetnames
     print(sheets)
-    sheet = ps[sheets[0]] # 'CATALOG'
+    sheet = ps[sheets[0]]    # 'CATALOG'
     print(sheet.max_row)
     search(LF, sheet)
 

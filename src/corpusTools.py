@@ -134,8 +134,14 @@ class ConferenceCorpusIntro:
         dbFile = self.printCacheFile()
         sqlDb = SQLDB(dbname=dbFile)
         # now we can directly query the EventCorpus.db abd get LoDs (List of Dicts) as result
-        # Try it by writing your own query
         res = sqlDb.query(query)
+        #print(res)
+        for index in range(len(res)):    # index is an int
+            print('\n')
+            print('next \n')
+            for key in res[index]:       # key is the name of the column
+                print(key)
+                print(res[index][key])
         print(tabulate(res, headers="keys"))
         return res
 
