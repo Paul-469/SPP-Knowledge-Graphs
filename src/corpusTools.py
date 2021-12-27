@@ -146,6 +146,19 @@ class ConferenceCorpusIntro:
         return res
 
 
+    def SqlQueryResultTest(self, query: str):
+        """
+        Just returns the query result as a LoD
+        """
+
+        dbFile = self.printCacheFile()
+        sqlDb = SQLDB(dbname=dbFile)
+
+        res = sqlDb.query(query)
+
+        return res
+
+
 
 
 

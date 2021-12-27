@@ -2,5 +2,11 @@ ConferenceCorpus
 tabulate
 pylodstorage
 openpyxl
+geograpy3
+nominatim
+OSMPythonTools==0.3.0
+spacy
+dataclasses
+
 lxml #ToDo: add to ConferenceCorpus requirements
 bs4 #ToDo: add to ConferenceCorpus requirements
