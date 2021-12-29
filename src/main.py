@@ -18,6 +18,10 @@ def print_hi(name):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
+    # s = "IT - 72(Campania)"
+    # print(s[s.find("(") + 1:s.find(")")])
+    # print(s)
+    # print("IT - 72(Campania)"["IT - 72(Campania)".find("(") + 1:"IT - 72(Campania)".find(")")])
     # val = 4
     # val = "{:02d}".format(val)
     # print(val)

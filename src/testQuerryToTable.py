@@ -1,3 +1,5 @@
+
+
 import corpusTools
 from tabulate import tabulate
 from corpus import location
@@ -113,6 +115,13 @@ class FTDate:
     t_d: int = 0
 
 
+@dataclass
+class loc:
+    city: str = ''
+    region: str = ''
+    country: str = ''
+
+
 # returns the ordinal for most inputs as long as they are below 199
 def ordinalToInt(ordinalInput: str):  # returns an int value for an ordinal input. returns 0 in none is found
     ordinalInput = ordinalInput.lower()  # ignore case
@@ -200,7 +209,6 @@ def string_distance(search_in: str, search1: str, search2: str):
 # TODO make it more generic so it handles more inputs and especially start and end in different months
 # very naive assumes a very basic format and that nothing start in a different year that it ends in
 def get_from_to(foundEntities, res, index, nlp):
-
     date_list = []
     for i in range(len(foundEntities)):
         if 'DATE' in foundEntities[i]['Entity Tag']:
@@ -257,7 +265,7 @@ def get_from_to(foundEntities, res, index, nlp):
         for x in range(len(numbers)):
             if '-' in numbers[x]:
                 found_day = True
-                if found_year:         # sometimes the Year is in this which would result in a wonky day number
+                if found_year:  # sometimes the Year is in this which would result in a wonky day number
                     if temp_result.f_y in numbers[x]:
                         numbers[x] = str(numbers[x]).replace(str(temp_result.f_y), '', 1)
                 days = numbers[x].split('-')
@@ -267,8 +275,8 @@ def get_from_to(foundEntities, res, index, nlp):
             if temp_result.t_m != temp_result.f_m:
                 if len(numbers) > 2:
                     numbers.sort(reverse=False)
-                    temp_result.f_d = numbers[0]
-                    temp_result.t_d = numbers[1]
+                    temp_result.f_d = numbers[1]  # from should be the lager number as it is the last day of the month
+                    temp_result.t_d = numbers[0]
             else:
                 if len(numbers) > 1:
                     numbers.sort(reverse=False)
@@ -285,30 +293,66 @@ def get_from_to(foundEntities, res, index, nlp):
         return temp_result
 
 
-# TODO implement this function so it does what it's supposed to
-# serves no real purpose right now but should be checking the column entries (if there) against the title  and return
-# the final columns
-def location_check(ll, res, index, nlp):
-    doc = nlp(res[index]['title'])
-    foundEntities = [{"Text": entity.text, "Entity Tag": entity.label_} for entity in doc.ents]
-    location_list = []
-    # print(tabulate(foundEntities, headers="keys"))
-    for i in range(len(foundEntities)):
-        if 'GPE' in foundEntities[i]['Entity Tag']:
-            location_list.append(foundEntities[i]['Text'])
+# Returns the location either from the location entry or title
+def location_finder(ll, res, index):
 
-    print(location_list)
-    if not location_list:
-        print('empty')
+    # a bunch of vars that should be self explanatory
+    return_val = loc
+    had_entries_city = False
+    had_entries_region = False
+    had_entries_country = False
+
+    # the data set is fucking unreliable, we need to make sure that location if not empty contains a location and if not
+    # we still need to verify whether the title might. if both are false we need this var and fill in null
+    no_further_location_data = False
+
+    # grab info from the columns. This might be misplaced trust but let's assume that this is a corner case we don't
+    # concern ourself with
+    if not res[index]['city'] is None:
+        loc.city = res[index]['city']
+        had_entries_city = True
+    if not res[index]['region'] is None:
+        loc.region = res[index]['region']
+        had_entries_region = True
+    if not res[index]['country'] is None:
+        loc.country = res[index]['country']
+        had_entries_country = True
+
+    # if so we can return early
+    if had_entries_city and had_entries_region and had_entries_country:
+        return return_val
     else:
-        for x in range(len(location_list)):
-            if ll.lookup(res[index]['location']) == ll.lookup(location_list[x]):
-                print(True)
+        # we look up the location from the location entry or the title depending on which works is any
+        if not res[index]['location'] is None:
+            result = ll.lookup(res[index]['location'])
+            if result is None:
+                result = ll.lookup(res[index]['title'])
+        else:
+            result = ll.lookup(res[index]['title'])
+            if res is None:
+                no_further_location_data = True
+
+        # we fill in missing data from the location lookup
+        if not had_entries_city:
+            if no_further_location_data:
+                loc.city = "null"
+            else:
+                loc.city = str(result).split(" ", 1)[0]
+        if not had_entries_region:
+            if no_further_location_data:
+                loc.region = "null"
+            else:
+                loc.region = str(result._region)[str(result._region).find("(") + 1:str(result._region).find(")")]
+        if not had_entries_region:
+            if no_further_location_data:
+                loc.country = "null"
+            else:
+                loc.country = str(result._country)[str(result._country).find("(") + 1:str(result._country).find(")")]
+
+    return return_val
 
 
 def test1(cc, ll):
-
-
     test_dict = [
         {'acronym': 'null', 'acronym2': 'null', 'ordinal': 'null', 'year': 'null', 'from': 'null', 'to': 'null',
          'country': 'null', 'region': 'null', 'city': 'null', 'gnd': 'null', 'dblp': 'null', 'wikicfpID': 'null',
@@ -335,14 +379,28 @@ def test1(cc, ll):
         ordinal = find_ordinal(foundEntities, res, index)
         year = res[index]['year']
         date = get_from_to(foundEntities, res, index, nlp)
-        print(ll.lookup(res[index]['location']))
-        # location_check(ll, res, index, nlp)
+
+        # print(ll.lookup(res[index]['location']))
+        # print(ll.lookup(res[index]['title']))
+
+        # this it utter rubbish as we rely on location lookup which is completely useless sometimes.
+        # like Exeter, United Kingdom returns Exeter (US-NH(New Hampshire) - US(United States of America)) so we
+        # decently need a trust score for individual entries that we can lower if we had to guess
+        location = location_finder(ll, res, index)
+        city = location.city
+        region = location.region
+        country = location.country
 
         dblp = res[index]['eventId']
         title = res[index]['title']
 
         test_dict = test_dict + [{'acronym': acronym + '-' + str(year), 'acronym2': acronym + '-' + str(ordinal),
-                                  'ordinal': str(ordinal), 'year': year, 'seriesAcronym': acronym, 'from': str("{:02d}".format(int(date.f_d))) + '.' + str("{:02d}".format(int(date.f_m)))+'.' + str("{:02d}".format(int(date.f_y))), 'to': str("{:02d}".format(int(date.t_d))) + '.' + str("{:02d}".format(int(date.t_m)))+'.' + str("{:02d}".format(int(date.t_y))), 'dblp': dblp, 'title': title}]
+                                  'ordinal': str(ordinal), 'year': year, 'seriesAcronym': acronym,
+                                  'from': str("{:02d}".format(int(date.f_d))) + '.' + str(
+                                      "{:02d}".format(int(date.f_m))) + '.' + str("{:02d}".format(int(date.f_y))),
+                                  'to': str("{:02d}".format(int(date.t_d))) + '.' + str(
+                                      "{:02d}".format(int(date.t_m))) + '.' + str("{:02d}".format(int(date.t_y))),
+                                  'dblp': dblp, 'title': title, 'city': city, 'region': region, 'country': country}]
 
     print(tabulate(test_dict, headers="keys"))
 
@@ -351,6 +409,68 @@ def test1(cc, ll):
     print(ll.lookup('Köln'))
     print(ll.lookup('abcd, Cologne'))  # if we have OSMPythonTools 0.3.3 or later this will fail because caching
     # changed and conferenceCorpus has not been patched as of writing
+
+
+# probably not needed anymore
+def location_check(ll, res, index):
+    is_same = False
+    result = ''
+    # print('-')
+    # print(type(ll.lookup(res[index]['location'])))
+    # print(ll.lookup(res[index]['location']))
+    # print(ll.lookup(res[index]['title']))
+    # print(ll.lookup(res[index]['title']))
+    # print(ll.lookup(res[index]['title'])._region)
+    # print(ll.lookup(res[index]['title'])._country)
+
+    if type(ll.lookup(res[index]['location'])) == type(ll.lookup(res[index]['title'])):
+        if ll.lookup(res[index]['location']).distance(ll.lookup(res[index]['title'])) == 0:
+            # print(ll.lookup(res[index]['location']).distance(ll.lookup(res[index]['title'])))
+            is_same = True
+            result = ll.lookup(res[index]['location'])
+        else:
+            result = ll.lookup(res[index]['title'])
+    else:
+        result = ll.lookup(res[index]['title'])
+    # print(is_same)
+    return result
+
+
+# serves no real purpose right now but should be checking the column entries (if there) against the title  and return
+# the final columns
+def locache2(ll, res, index, nlp):
+    doc = nlp(res[index]['title'])
+    foundEntities = [{"Text": entity.text, "Entity Tag": entity.label_} for entity in doc.ents]
+    location_list = []
+    print(tabulate(foundEntities, headers="keys"))
+    for i in range(len(foundEntities)):
+        if 'GPE' in foundEntities[i]['Entity Tag']:
+            location_list.append(foundEntities[i]['Text'])
+
+    print(location_list)
+    if not location_list:
+        print('empty')
+    else:
+        is_same = False
+        result = ''
+
+        for x in range(len(location_list)):
+            print('-')
+            print(type(ll.lookup(res[index]['location'])))
+            print(ll.lookup(res[index]['location']))
+            print(ll.lookup(location_list[x]))
+            print(ll.lookup(res[index]['title']))
+            if type(ll.lookup(res[index]['location'])) == type(ll.lookup(location_list[x])):
+                if ll.lookup(res[index]['location']).distance(ll.lookup(location_list[x])) == 0:
+                    is_same = True
+                    result = ll.lookup(res[index]['location'])
+                print(ll.lookup(res[index]['location']).distance(ll.lookup(location_list[x])))
+
+            if (ll.lookup(res[index]['location'])) == (ll.lookup(location_list[x])):
+                print(True)
+        print(is_same)
+        if not is_same:
+            is_same = False
 
 
 # Maybe I'll finish this maybe not don't try to understand what I did here
