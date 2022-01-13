@@ -1,12 +1,8 @@
-import corpusTools
+# includes all functions that may be useful beyond one file
 from tabulate import tabulate
-from corpus import location
-import spacy
 import re
 from dataclasses import dataclass
 
-# might not be complete and is limited to 199 ordinals (in part due to function implementation)
-# we assume things are spelled correctly
 num_dict = {
     'one': 1,
     'two': 2,
@@ -118,6 +114,64 @@ class loc:
     city: str = ''
     region: str = ''
     country: str = ''
+
+
+# Returns the location either from the location entry or title
+def location_finder(ll, res, index):
+    # a bunch of vars that should be self explanatory
+    return_val = loc
+    had_entries_city = False
+    had_entries_region = False
+    had_entries_country = False
+
+    # the data set is fucking unreliable, we need to make sure that location if not empty contains a location and if not
+    # we still need to verify whether the title might. if both are false we need this var and fill in null
+    no_further_location_data = False
+
+    # grab info from the columns. This might be misplaced trust but let's assume that this is a corner case we don't
+    # concern ourself with
+    if not res[index]['city'] is None:
+        loc.city = res[index]['city']
+        had_entries_city = True
+    if not res[index]['region'] is None:
+        loc.region = res[index]['region']
+        had_entries_region = True
+    if not res[index]['country'] is None:
+        loc.country = res[index]['country']
+        had_entries_country = True
+
+    # if so we can return early
+    if had_entries_city and had_entries_region and had_entries_country:
+        return return_val
+    else:
+        # we look up the location from the location entry or the title depending on which works is any
+        if not res[index]['location'] is None:
+            result = ll.lookup(res[index]['location'])
+            if result is None:
+                result = ll.lookup(res[index]['title'])
+        else:
+            result = ll.lookup(res[index]['title'])
+            if res is None:
+                no_further_location_data = True
+
+        # we fill in missing data from the location lookup
+        if not had_entries_city:
+            if no_further_location_data:
+                loc.city = "null"
+            else:
+                loc.city = str(result).split(" ", 1)[0]
+        if not had_entries_region:
+            if no_further_location_data:
+                loc.region = "null"
+            else:
+                loc.region = str(result._region)[str(result._region).find("(") + 1:str(result._region).find(")")]
+        if not had_entries_region:
+            if no_further_location_data:
+                loc.country = "null"
+            else:
+                loc.country = str(result._country)[str(result._country).find("(") + 1:str(result._country).find(")")]
+
+    return return_val
 
 
 # returns the ordinal for most inputs as long as they are below 199
@@ -382,9 +436,6 @@ def fix_ordinal(dict):
                 chain_list.append(ord_list)
                 ord_list = []
 
-
-    print(len(chain_list))
-
     # return if we found no errors
     if len(chain_list) == 1:
         return dict
@@ -457,159 +508,3 @@ def fix_ordinal(dict):
             i = len(final_list) - 1
 
     return dict
-
-
-def test1(cc, ll):
-    test_dict = [
-        {'acronym': 'null', 'acronym2': 'null', 'ordinal': 'null', 'year': 'null', 'from': 'null', 'to': 'null',
-         'country': 'null', 'region': 'null', 'city': 'null', 'gnd': 'null', 'dblp': 'null', 'wikicfpID': 'null',
-         'or': 'null', 'wikidata': 'null', 'seriesAcronym': 'null', 'title': 'null'}]
-    # print(tabulate(test_dict3, headers="keys"))
-
-    # cc.printSqlQueryResultTest("SELECT * FROM event_dblp WHERE eventId LIKE '%HPCC%'") Bicob
-    res = cc.SqlQueryResultTest("SELECT * FROM event_dblp WHERE eventId LIKE '%HPCC%'")  # fpl
-
-    nlp = spacy.load("en_core_web_trf")  # initialize spacy _trf is the core intended for accuracy
-
-    for index in range(len(res)):
-        # TODO figure out a way so that ordinals are assigned to the correct event if more than one are in the title
-        #  Note: this somewhat works now but we have to deduct trust score for details like that when multiple events
-        #  are in a title
-
-        doc = nlp(res[index]['title'])
-        foundEntities = [{"Text": entity.text, "Entity Tag": entity.label_} for entity in doc.ents]
-
-        # print(tabulate(foundEntities, headers="keys"))
-        # print('next')
-        # print(res[index]['series'])
-        acronym = res[index]['series']
-        if acronym is None:
-            acronym = 'error'
-        ordinal = find_ordinal(foundEntities, res, index)
-        year = res[index]['year']
-        date = get_from_to(foundEntities, res, index, nlp)
-        if date is None:
-            date = FTDate
-
-        # print(ll.lookup(res[index]['location']))
-        # print(ll.lookup(res[index]['title']))
-
-        # this it utter rubbish as we rely on location lookup which is completely useless sometimes.
-        # like Exeter, United Kingdom returns Exeter (US-NH(New Hampshire) - US(United States of America)) so we
-        # decently need a trust score for individual entries that we can lower if we had to guess
-        location = location_finder(ll, res, index)
-        city = location.city
-        region = location.region
-        country = location.country
-
-        dblp = res[index]['eventId']
-        title = res[index]['title']
-
-        test_dict = test_dict + [{'acronym': acronym + '-' + str(year), 'acronym2': acronym + '-' + str(ordinal),
-                                  'ordinal': str(ordinal), 'year': year, 'seriesAcronym': acronym,
-                                  'from': str("{:02d}".format(int(date.f_d))) + '.' + str(
-                                      "{:02d}".format(int(date.f_m))) + '.' + str("{:02d}".format(int(date.f_y))),
-                                  'to': str("{:02d}".format(int(date.t_d))) + '.' + str(
-                                      "{:02d}".format(int(date.t_m))) + '.' + str("{:02d}".format(int(date.t_y))),
-                                  'dblp': dblp, 'title': title, 'city': city, 'region': region, 'country': country}]
-
-    print(tabulate(test_dict, headers="keys"))
-    print('\n')
-    print(tabulate(fix_ordinal(test_dict), headers="keys"))
-
-    # location test
-    print(ll.lookup('Bielefeld'))
-    print(ll.lookup('Köln'))
-    print(ll.lookup('abcd, Cologne'))  # if we have OSMPythonTools 0.3.3 or later this will fail because caching
-    # changed and conferenceCorpus has not been patched as of writing
-
-
-# probably not needed anymore
-def location_check(ll, res, index):
-    is_same = False
-    result = ''
-    # print('-')
-    # print(type(ll.lookup(res[index]['location'])))
-    # print(ll.lookup(res[index]['location']))
-    # print(ll.lookup(res[index]['title']))
-    # print(ll.lookup(res[index]['title']))
-    # print(ll.lookup(res[index]['title'])._region)
-    # print(ll.lookup(res[index]['title'])._country)
-
-    if type(ll.lookup(res[index]['location'])) == type(ll.lookup(res[index]['title'])):
-        if ll.lookup(res[index]['location']).distance(ll.lookup(res[index]['title'])) == 0:
-            # print(ll.lookup(res[index]['location']).distance(ll.lookup(res[index]['title'])))
-            is_same = True
-            result = ll.lookup(res[index]['location'])
-        else:
-            result = ll.lookup(res[index]['title'])
-    else:
-        result = ll.lookup(res[index]['title'])
-    # print(is_same)
-    return result
-
-
-# serves no real purpose right now but should be checking the column entries (if there) against the title  and return
-# the final columns
-def locache2(ll, res, index, nlp):
-    doc = nlp(res[index]['title'])
-    foundEntities = [{"Text": entity.text, "Entity Tag": entity.label_} for entity in doc.ents]
-    location_list = []
-    print(tabulate(foundEntities, headers="keys"))
-    for i in range(len(foundEntities)):
-        if 'GPE' in foundEntities[i]['Entity Tag']:
-            location_list.append(foundEntities[i]['Text'])
-
-    print(location_list)
-    if not location_list:
-        print('empty')
-    else:
-        is_same = False
-        result = ''
-
-        for x in range(len(location_list)):
-            print('-')
-            print(type(ll.lookup(res[index]['location'])))
-            print(ll.lookup(res[index]['location']))
-            print(ll.lookup(location_list[x]))
-            print(ll.lookup(res[index]['title']))
-            if type(ll.lookup(res[index]['location'])) == type(ll.lookup(location_list[x])):
-                if ll.lookup(res[index]['location']).distance(ll.lookup(location_list[x])) == 0:
-                    is_same = True
-                    result = ll.lookup(res[index]['location'])
-                print(ll.lookup(res[index]['location']).distance(ll.lookup(location_list[x])))
-
-            if (ll.lookup(res[index]['location'])) == (ll.lookup(location_list[x])):
-                print(True)
-        print(is_same)
-        if not is_same:
-            is_same = False
-
-
-# Maybe I'll finish this maybe not don't try to understand what I did here
-def matching_title_w_acronym(title: str, acronym: str):
-    words_of_title = []
-    possible_acronyms = []
-    for word in title.split():
-        words_of_title.append(word)
-
-    word_acr = ''
-    for x in range(len(words_of_title)):
-        word_acr = word_acr + words_of_title[x][0]
-    possible_acronyms.append(word_acr)
-    for x in range(len(words_of_title)):
-        word_acr = word_acr + words_of_title[x][0]
-        word_acr = word_acr + words_of_title[x][1]
-    possible_acronyms.append(word_acr)
-
-    for z in range(len(possible_acronyms)):
-        counter = 0
-        limit = len(possible_acronyms[z][0])
-        y = 0
-        while counter < limit:
-            if acronym[y] == possible_acronyms[z][counter]:
-                y = y + 1
-            counter = counter + 1
-            if y == len(acronym):
-                return True
-    return False

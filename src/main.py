@@ -1,8 +1,11 @@
 # This is a sample Python script.
+import spacy
+
 import excelExtract
 import corpusTesting
 import dedupeTest
 import testQuerryToTable
+import dblpTable
 import corpusTools
 from corpus import location
 import sys
@@ -30,10 +33,13 @@ if __name__ == '__main__':
     cc = corpusTools.ConferenceCorpusIntro()  # initialize conferenceCorpus instance
     cc.printCacheFile()
     ll = location.LocationLookup()  # initialize locationlookup
+    nlp = spacy.load("en_core_web_trf")  # initialize spacy _trf is the core intended for accuracy
     print_hi('PyCharm')
     #corpusTesting.Test1()
     #excelExtract.test('CMES')
     #dedupeTest.test1()
+    dblpTable.build(cc, ll, nlp, "SELECT * FROM event_dblp WHERE eventId LIKE '%HPCC%'")
+    print('\n\n')
     testQuerryToTable.test1(cc, ll)
     #testQuerryToTable.ordinalToInt('fiftyfirst')
     #testQuerryToTable.ordinalToInt('101th')
@@ -41,17 +47,6 @@ if __name__ == '__main__':
     #testQuerryToTable.string_distance("ghaogiadfghobdfahgoiadsgdfaigWort1123456789Wort2dföoashgioaegh", "wort1", "wort2")
 
 
-def main_fnc(cc, ll):
-    # corpusTesting.Test1()
-    # excelExtract.test('CMES')
-    # dedupeTest.test1()
-    # testQuerryToTable.test1(cc, ll)
-    # testQuerryToTable.ordinalToInt('fiftyfirst')
-    # testQuerryToTable.ordinalToInt('101th')
-    # testQuerryToTable.ordinalToInt('fourth')
-    # testQuerryToTable.string_distance("ghaogiadfghobdfahgoiadsgdfaigWort1123456789Wort2dföoashgioaegh", "wort1", "wort2")
-    print(9)
-    return 9
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
 
