@@ -613,3 +613,13 @@ def matching_title_w_acronym(title: str, acronym: str):
             if y == len(acronym):
                 return True
     return False
+
+# we look up the location from the location entry or the title depending on which works is any
+# if not res[index]['location'] is None:
+#    result = ll.lookup(res[index]['location'])
+#    if result is None:
+#        result = ll.lookup(res[index]['title'])
+# else:
+#    result = ll.lookup(res[index]['title'])
+#    if result is None:
+#        no_further_location_data = True

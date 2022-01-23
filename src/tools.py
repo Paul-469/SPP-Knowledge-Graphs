@@ -116,64 +116,6 @@ class loc:
     country: str = ''
 
 
-# Returns the location either from the location entry or title
-def location_finder(ll, res, index):
-    # a bunch of vars that should be self explanatory
-    return_val = loc
-    had_entries_city = False
-    had_entries_region = False
-    had_entries_country = False
-
-    # the data set is fucking unreliable, we need to make sure that location if not empty contains a location and if not
-    # we still need to verify whether the title might. if both are false we need this var and fill in null
-    no_further_location_data = False
-
-    # grab info from the columns. This might be misplaced trust but let's assume that this is a corner case we don't
-    # concern ourself with
-    if not res[index]['city'] is None:
-        loc.city = res[index]['city']
-        had_entries_city = True
-    if not res[index]['region'] is None:
-        loc.region = res[index]['region']
-        had_entries_region = True
-    if not res[index]['country'] is None:
-        loc.country = res[index]['country']
-        had_entries_country = True
-
-    # if so we can return early
-    if had_entries_city and had_entries_region and had_entries_country:
-        return return_val
-    else:
-        # we look up the location from the location entry or the title depending on which works is any
-        if not res[index]['location'] is None:
-            result = ll.lookup(res[index]['location'])
-            if result is None:
-                result = ll.lookup(res[index]['title'])
-        else:
-            result = ll.lookup(res[index]['title'])
-            if res is None:
-                no_further_location_data = True
-
-        # we fill in missing data from the location lookup
-        if not had_entries_city:
-            if no_further_location_data:
-                loc.city = "null"
-            else:
-                loc.city = str(result).split(" ", 1)[0]
-        if not had_entries_region:
-            if no_further_location_data:
-                loc.region = "null"
-            else:
-                loc.region = str(result._region)[str(result._region).find("(") + 1:str(result._region).find(")")]
-        if not had_entries_region:
-            if no_further_location_data:
-                loc.country = "null"
-            else:
-                loc.country = str(result._country)[str(result._country).find("(") + 1:str(result._country).find(")")]
-
-    return return_val
-
-
 # returns the ordinal for most inputs as long as they are below 199
 def ordinalToInt(ordinalInput: str):  # returns an int value for an ordinal input. returns 0 in none is found
     ordinalInput = ordinalInput.lower()  # ignore case
@@ -346,7 +288,7 @@ def get_from_to(foundEntities, res, index, nlp):
 
 
 # Returns the location either from the location entry or title
-def location_finder(ll, res, index):
+def location_finder(ll, res, index, nlp):
     # a bunch of vars that should be self explanatory
     return_val = loc
     had_entries_city = False
@@ -362,9 +304,11 @@ def location_finder(ll, res, index):
     if not res[index]['city'] is None:
         loc.city = res[index]['city']
         had_entries_city = True
+
     if not res[index]['region'] is None:
         loc.region = res[index]['region']
         had_entries_region = True
+
     if not res[index]['country'] is None:
         loc.country = res[index]['country']
         had_entries_country = True
@@ -373,22 +317,41 @@ def location_finder(ll, res, index):
     if had_entries_city and had_entries_region and had_entries_country:
         return return_val
     else:
-        # we look up the location from the location entry or the title depending on which works is any
-        if not res[index]['location'] is None:
-            result = ll.lookup(res[index]['location'])
-            if result is None:
-                result = ll.lookup(res[index]['title'])
+        # Get location from either location column or title.
+        # we use nlp here. lookup can handle a title just fine but the result can be off for whatever reason
+        # I think using nlp will create fewer problems than it solves
+        # the old implementation is still as a comment at the end of the testQuerryToTable.py file
+        if res[index]['title'] is None:
+            doc = nlp('')
         else:
-            result = ll.lookup(res[index]['title'])
-            if res is None:
-                no_further_location_data = True
+            doc = nlp(res[index]['title'])
+        fromTitle = [{"Text": entity.text, "Entity Tag": entity.label_} for entity in doc.ents]
+        if res[index]['location'] is None:
+            doc = nlp('')
+        else:
+            doc = nlp(res[index]['location'])
+        fromLocation = [{"Text": entity.text, "Entity Tag": entity.label_} for entity in doc.ents]
+        found = False
+        for x in range(len(fromLocation)):
+            if fromLocation[x]['Entity Tag'] == 'GPE':
+                result = ll.lookup(fromLocation[x]['Text'])
+                found = True
+                break
+        if not found:
+            for x in range(len(fromTitle)):
+                if fromTitle[x]['Entity Tag'] == 'GPE':
+                    result = ll.lookup(fromTitle[x]['Text'])
+                    found = True
+                    break
+        if not found:
+            no_further_location_data = True
 
         # we fill in missing data from the location lookup
         if not had_entries_city:
             if no_further_location_data:
                 loc.city = "null"
             else:
-                loc.city = str(result).split(" ", 1)[0]
+                loc.city = str(result).split("(", 1)[0]
         if not had_entries_region:
             if no_further_location_data:
                 loc.region = "null"
@@ -424,14 +387,20 @@ def fix_ordinal(dict):
             else:
                 chain_list.append([dict[x]['ordinal']])
             continue
+        # make sure that if we miss an ordinal we have no None type but also can be sure that it is defiantly wrong
+        if dict[x]['ordinal'] is None or dict[x]['ordinal'] == 'null':
+            dict[x]['ordinal'] = -1
+        if dict[x+1]['ordinal'] is None or dict[x+1]['ordinal'] == 'null':
+            dict[x+1]['ordinal'] = -1
+
         if int(dict[x]['ordinal']) + 1 == int(dict[x + 1]['ordinal']):
             ord_list.append((dict[x]['ordinal']))
         else:
-            if dict[x]['ordinal'] < dict[x + 1]['ordinal']:
+            if int(dict[x]['ordinal']) < int(dict[x + 1]['ordinal']):
                 ord_list.append(dict[x]['ordinal'])
                 chain_list.append(ord_list)
                 ord_list = []
-            if dict[x]['ordinal'] >= dict[x + 1]['ordinal']:
+            if int(dict[x]['ordinal']) >= int(dict[x + 1]['ordinal']):
                 ord_list.append(dict[x]['ordinal'])
                 chain_list.append(ord_list)
                 ord_list = []
@@ -506,5 +475,18 @@ def fix_ordinal(dict):
         # if sth. goes wrong we want to prevent an out of bounds error for the index
         if i >= len(final_list):
             i = len(final_list) - 1
+
+    return dict
+
+
+# We remove events that were returned but do not share the same acronym as the input
+def removeFalsePositives(dict, input):
+    to_remove = []
+    for x in range(len(dict)):
+        if not input.lower() == dict[x]['seriesAcronym'].lower():
+            to_remove.append(x)
+
+    for x in range(len(to_remove)):
+        del dict[to_remove[x] - x]
 
     return dict
