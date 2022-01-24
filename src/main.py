@@ -10,6 +10,7 @@ import corpusTools
 from corpus import location
 import query
 import sys
+import wikicfpTable
 
 # Press Umschalt+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
@@ -26,6 +27,7 @@ if __name__ == '__main__':
     ll = location.LocationLookup()  # initialize locationlookup
     nlp = spacy.load("en_core_web_trf")   # run "python -m spacy download en_core_web_trf" if it fails.
 
+    wikicfpTable.buildFromRESTful(ll, nlp, 'HPCC')
     dblpTable.buildFromRESTful(ll, nlp, 'HPCC')
     # query.test()
     sys.exit()

@@ -1,5 +1,4 @@
 # includes all functions that may be useful beyond one file
-from tabulate import tabulate
 import re
 from dataclasses import dataclass
 
@@ -142,6 +141,13 @@ def find_ordinal(foundEntities, res, index):
     counter = 0
     final_count = 0
 
+    # source specific vars (initialized as used in dblp
+    series = 'series'
+
+    # for wikicfp
+    if any('locality' in d for d in res):
+        series = 'acronym'
+
     for i in range(len(foundEntities)):
         # print(tabulate(foundEntities, headers="keys"))
         if 'EVENT' in foundEntities[i]['Entity Tag']:
@@ -149,10 +155,10 @@ def find_ordinal(foundEntities, res, index):
 
     for i in range(len(event_list)):
         if len(event_list[i]) < 20:  # if the event entry is longer than 20 chars we assume that we have a title here
-            if res[index]['series'] in event_list[i]:
+            if res[index][series] in event_list[i]:
                 temp_str = re.sub(r"[^a-zA-Z0-9]+", '$',
                                   temp_str)  # we assume that if more than one acronym is in an element they will be split by a special character
-                temp_str = event_list[i].replace(res[index]['series'], "§")
+                temp_str = event_list[i].replace(res[index][series], "§")
                 for element in range(len(temp_str)):
                     if temp_str[element] == "$":
                         counter = counter + 1
@@ -203,6 +209,31 @@ def string_distance(search_in: str, search1: str, search2: str):
 # TODO make it more generic so it handles more inputs and especially start and end in different months
 # very naive assumes a very basic format and that nothing start in a different year that it ends in
 def get_from_to(foundEntities, res, index, nlp):
+    # some sources have that data in a neat format so first we check whether we are dealing with one of those and if so
+    # extract it from there
+    # for example dblp doesn't but wikicfp does
+
+    # for wikicfp
+    if any('locality' in d for d in res):
+        result = FTDate
+        if not res[index]['startDate'] is None:
+            start = res[index]['startDate'].split()
+            result.f_d = start[1]
+            for k in month_dict:
+                if k in start[2].lower():
+                    result.f_m = month_dict[k]
+            result.f_y = start[3]
+        if not res[index]['endDate'] is None:
+            end = res[index]['endDate'].split()
+            result.t_d = end[1]
+            for k in month_dict:
+                if k in end[2].lower():
+                    result.t_m = month_dict[k]
+            result.t_y = end[3]
+
+        return result
+
+
     date_list = []
     for i in range(len(foundEntities)):
         if 'DATE' in foundEntities[i]['Entity Tag']:
@@ -295,22 +326,31 @@ def location_finder(ll, res, index, nlp):
     had_entries_region = False
     had_entries_country = False
 
+    # Keys for different sources (initialized for the dblp values)
+    city = 'city'
+    region = 'region'
+    country = 'country'
+    location_tab = 'location'
+
+    # for wikicfp
+    if any('locality' in d for d in res):
+        location_tab = 'locality'
     # the data set is fucking unreliable, we need to make sure that location if not empty contains a location and if not
     # we still need to verify whether the title might. if both are false we need this var and fill in null
     no_further_location_data = False
 
     # grab info from the columns. This might be misplaced trust but let's assume that this is a corner case we don't
     # concern ourself with
-    if not res[index]['city'] is None:
-        loc.city = res[index]['city']
+    if not res[index][city] is None:
+        loc.city = res[index][city]
         had_entries_city = True
 
-    if not res[index]['region'] is None:
-        loc.region = res[index]['region']
+    if not res[index][region] is None:
+        loc.region = res[index][region]
         had_entries_region = True
 
-    if not res[index]['country'] is None:
-        loc.country = res[index]['country']
+    if not res[index][country] is None:
+        loc.country = res[index][country]
         had_entries_country = True
 
     # if so we can return early
@@ -326,10 +366,10 @@ def location_finder(ll, res, index, nlp):
         else:
             doc = nlp(res[index]['title'])
         fromTitle = [{"Text": entity.text, "Entity Tag": entity.label_} for entity in doc.ents]
-        if res[index]['location'] is None:
+        if res[index][location_tab] is None:
             doc = nlp('')
         else:
-            doc = nlp(res[index]['location'])
+            doc = nlp(res[index][location_tab])
         fromLocation = [{"Text": entity.text, "Entity Tag": entity.label_} for entity in doc.ents]
         found = False
         for x in range(len(fromLocation)):
@@ -450,13 +490,32 @@ def fix_ordinal(dict):
             else:
                 # if the within the next two entries the series is continued and does not violate the year we will
                 # correct the error
-                next_next_year = int(dict[index_in_dict + 2]['year'])
-                next_next_next_year = int(dict[index_in_dict + 3]['year'])
+                # if we are almost at the end of a list we can't do much in order to correct errors
+
+                if index_in_dict + 2 < len(dict):
+                    next_next_year = int(dict[index_in_dict + 2]['year'])
+                else:
+                    continue
+
+                if index_in_dict + 3 < len(dict):
+                    next_next_next_year = int(dict[index_in_dict + 3]['year'])
+                else:
+                    # we can't know whether the series holds for more than year longer as we are at the end
+                    continue # TODO decide whether one more year been known is enough to decide
+
                 # see whether the year series is continued
                 if next_next_next_year - 3 == next_next_year -2 == next_year - 1 == current_year == previous_year + 1:
-                    if int((chain_list[y - 1])[-1]) + 3 == int((chain_list[y+2])[0]):
-                        chain_list[y][0] = int((chain_list[y - 1])[-1]) + 1
-                        chain_list[y+1][0] = int(chain_list[y][0]) + 1
+                    if y + 2 < len(chain_list) and 1 == len(chain_list[y+1]):
+                        if int((chain_list[y - 1])[-1]) + 3 == int((chain_list[y+2])[0]):
+                            chain_list[y][0] = int((chain_list[y - 1])[-1]) + 1
+                            chain_list[y+1][0] = int(chain_list[y][0]) + 1
+                    else:
+                        if y + 1 < len(chain_list) and 1 > len(chain_list[y+1]):
+                            from_next_next = int((chain_list[y + 1])[1])
+                            if y + 2 < len(chain_list) and 1 == len(chain_list[y + 1]):
+                                if int((chain_list[y - 1])[-1]) + 3 == int((chain_list[y + 2])[0]):
+                                    chain_list[y][0] = int((chain_list[y - 1])[-1]) + 1
+                                    chain_list[y + 1][0] = int(chain_list[y][0]) + 1
 
     # join the result into one list
     final_list = []
@@ -479,7 +538,9 @@ def fix_ordinal(dict):
     return dict
 
 
-# We remove events that were returned but do not share the same acronym as the input
+# We remove events that were returned but do not share the same acronym as the input from the final list
+# This should be redundant now as we have removeFalsePostivesEarly.
+# Moreover it is very strict i.e. prefect match,  so it may not be so useful
 def removeFalsePositives(dict, input):
     to_remove = []
     for x in range(len(dict)):
@@ -490,3 +551,28 @@ def removeFalsePositives(dict, input):
         del dict[to_remove[x] - x]
 
     return dict
+
+# remove events from the query output whos acronym does not match the input
+def removeFalsePostivesEarly(res, input):
+
+    # source specific var
+    acronym = 'series'
+
+    # for wikicfp
+    if any('locality' in d for d in res):
+        acronym = 'acronym'
+
+    to_remove = []
+    for x in range(len(res)):
+        if not findWholeWord(input)(res[x][acronym]):
+            to_remove.append(x)
+
+    for x in range(len(to_remove)):
+        del res[to_remove[x] - x]
+
+    return res
+
+
+# Function I nicked from stackoverflow: https://stackoverflow.com/a/5320179
+def findWholeWord(w):
+    return re.compile(r'\b({0})\b'.format(w), flags=re.IGNORECASE).search

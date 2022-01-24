@@ -2,7 +2,8 @@
 from tabulate import tabulate
 import query
 from src import tools
-from src.tools import find_ordinal, get_from_to, FTDate, location_finder, fix_ordinal, removeFalsePositives
+from src.tools import find_ordinal, get_from_to, FTDate, location_finder, fix_ordinal, removeFalsePositives, \
+    removeFalsePostivesEarly
 
 
 # deprecated!!!
@@ -13,6 +14,7 @@ def buildFromLocalCC(cc, ll, nlp, query):
          'or': 'null', 'wikidata': 'null', 'seriesAcronym': 'null', 'title': 'null'}]
 
     res = cc.SqlQueryResultTest(query)  # fpl
+    removeFalsePostivesEarly(res, input)
 
     for index in range(len(res)):
         # TODO figure out a way so that ordinals are assigned to the correct event if more than one are in the title
@@ -42,7 +44,7 @@ def buildFromLocalCC(cc, ll, nlp, query):
         if date is None:
             date = FTDate
 
-        location = tools.location_finder(ll, res, index)
+        location = location_finder(ll, res, index)
         city = location.city
         region = location.region
         country = location.country
@@ -73,6 +75,7 @@ def buildFromRESTful(ll, nlp, input):
          'or': 'null', 'wikidata': 'null', 'seriesAcronym': 'null', 'title': 'null'}]
 
     res = query.getdblp(input)  # fpl
+    removeFalsePostivesEarly(res, input)
 
     for index in range(len(res)):
         # TODO figure out a way so that ordinals are assigned to the correct event if more than one are in the title
