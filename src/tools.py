@@ -421,7 +421,6 @@ def fix_ordinal(dict):
             dict[x]['ordinal'] = -1
 
         if dict[x]['ordinal'] == 'null':  # check for a missing ordinal
-
             chain_list.append(ord_list)
             chain_list.append([dict[x]['ordinal']])
             ord_list = []
@@ -433,8 +432,8 @@ def fix_ordinal(dict):
             else:
                 chain_list.append([dict[x]['ordinal']])
             continue
-        # make sure that if we miss an ordinal we have no None type but also can be sure that it is defiantly wrong
 
+        # make sure that if we miss an ordinal we have no None type but also can be sure that it is defiantly wrong
         if dict[x+1]['ordinal'] is None or dict[x+1]['ordinal'] == 'null':
             dict[x+1]['ordinal'] = -1
 
