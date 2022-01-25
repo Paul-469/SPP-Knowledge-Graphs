@@ -22,6 +22,8 @@ def print_hi(name):
 
 
 # TODO add "python -m spacy download en_core_web_trf" to the install script or else spacy will fail when trying to load
+# spacy needs to be ver. 3.2.1 and you may need to update the core if you update spacy
+# also watch
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     ll = location.LocationLookup()  # initialize locationlookup

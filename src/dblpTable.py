@@ -125,5 +125,5 @@ def buildFromRESTful(ll, nlp, input):
     print(tabulate(table, headers="keys"))
     print('\n')
     print(tabulate(fix_ordinal(table), headers="keys"))
-    print('\n')
-    print(tabulate(removeFalsePositives(table, input), headers="keys"))
+    # print('\n')
+    # print(tabulate(removeFalsePositives(table, input), headers="keys"))

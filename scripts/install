@@ -37,3 +37,4 @@ esac
 $pip --version
 echo "installing required python modules with useroption $useroption"
 $pip install -r requirements.txt #$pip install $useroption -r requirements.txt
+python -m spacy download en_core_web_trf

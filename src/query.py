@@ -101,6 +101,25 @@ def getwikicfp(input:str):
 # returns the query for the restful interface for the given data source as a list of dicts; input is an acronym
 # if the request fails it returns and prints 'error'
 # if the given datasource is not present it returns and prints 'source not available'
+def getgnd(input:str):
+    url = 'https://conferencecorpus.bitplan.com/eventseries/ßß?format=json'
+    url = url.replace('ßß', input)
+    response = requests.get(url)
+    if response:
+        print('Success!')
+        if 'gnd' in response.json():
+            return response.json()['gnd']
+        else:
+            print('source \'gnd\' not available')
+            return 'source not available'
+    else:
+        print('An error has occurred.')
+        return 'error'
+
+
+# returns the query for the restful interface for the given data source as a list of dicts; input is an acronym
+# if the request fails it returns and prints 'error'
+# if the given datasource is not present it returns and prints 'source not available'
 def getwikidata(input:str):
     url = 'https://conferencecorpus.bitplan.com/eventseries/ßß?format=json'
     url = url.replace('ßß', input)
