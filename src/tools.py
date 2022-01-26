@@ -2,6 +2,8 @@
 import re
 from dataclasses import dataclass
 
+from tabulate import tabulate
+
 num_dict = {
     'one': 1,
     'two': 2,
@@ -148,6 +150,14 @@ def find_ordinal(foundEntities, res, index):
     if any('locality' in d for d in res):
         series = 'acronym'
 
+    # for confref
+    if any('ranks' in d for d in res):
+        series = 'acronym'
+
+    # for proceedings.com
+    if type(res[index]) == tuple:
+        series = 1
+
     for i in range(len(foundEntities)):
         # print(tabulate(foundEntities, headers="keys"))
         if 'EVENT' in foundEntities[i]['Entity Tag']:
@@ -213,6 +223,22 @@ def get_from_to(foundEntities, res, index, nlp):
     # extract it from there
     # for example dblp doesn't but wikicfp does
 
+    # for confref
+    if any('ranks' in d for d in res):
+        result = FTDate
+        if not res[index]['startDate'] is None:
+            start = res[index]['startDate'].split('-')
+            result.f_d = start[2]
+            result.f_m = start[1]
+            result.f_y = start[0]
+        if not res[index]['endDate'] is None:
+            end = res[index]['endDate'].split('-')
+            result.t_d = end[2]
+            result.t_m = end[1]
+            result.t_y = end[0]
+
+        return result
+
     # for wikicfp
     if any('locality' in d for d in res):
         result = FTDate
@@ -233,6 +259,42 @@ def get_from_to(foundEntities, res, index, nlp):
 
         return result
 
+    # for proceedings.com
+    if type(res[index]) == tuple:
+        result = FTDate
+
+        items = res[index][4].split()
+        # check whether we have an event starting in one month and ending in another if so: do the else part
+        if items[4] != '-':
+
+            days = items[1].split('-')
+
+            result.f_d = days[0]
+            for k in month_dict:
+                if k in items[2].lower():
+                    result.f_m = month_dict[k]
+            result.f_y = ''.join(e for e in items[3] if e.isalnum())
+
+            result.t_d = days[1]
+            for k in month_dict:
+                if k in items[2].lower():
+                    result.t_m = month_dict[k]
+            result.t_y = ''.join(e for e in items[3] if e.isalnum())
+        else:
+
+            result.f_d = items[1]
+            for k in month_dict:
+                if k in items[2].lower():
+                    result.f_m = month_dict[k]
+            result.f_y = ''.join(e for e in items[6] if e.isalnum())
+
+            result.t_d = items[4]
+            for k in month_dict:
+                if k in items[5].lower():
+                    result.t_m = month_dict[k]
+            result.t_y = ''.join(e for e in items[6] if e.isalnum())
+
+        return result
 
     date_list = []
     for i in range(len(foundEntities)):
@@ -319,18 +381,35 @@ def get_from_to(foundEntities, res, index, nlp):
 
 
 # Returns the location either from the location entry or title
+# also for cc Exciter UK or United Kingdom needs to be patched
+# also as we use nlp before location look up we might need to catch the online case
 def location_finder(ll, res, index, nlp):
     # a bunch of vars that should be self explanatory
     return_val = loc
     had_entries_city = False
     had_entries_region = False
     had_entries_country = False
+    has_such_columns = True
+    title = 'title'
 
     # Keys for different sources (initialized for the dblp values)
     city = 'city'
     region = 'region'
     country = 'country'
     location_tab = 'location'
+
+    # for proceedings.com
+    if type(res[index]) == tuple:
+        location_tab = 4
+        has_such_columns = False
+        title = 1
+        # Fix for
+        if 'Virtual Conference' in res[index][title]:
+            loc.city = 'online'
+            loc.region = 'online'
+            loc.country = 'online'
+            return loc
+
 
     # for wikicfp
     if any('locality' in d for d in res):
@@ -341,17 +420,18 @@ def location_finder(ll, res, index, nlp):
 
     # grab info from the columns. This might be misplaced trust but let's assume that this is a corner case we don't
     # concern ourself with
-    if not res[index][city] is None:
-        loc.city = res[index][city]
-        had_entries_city = True
+    if has_such_columns:
+        if not res[index][city] is None:
+            loc.city = res[index][city]
+            had_entries_city = True
 
-    if not res[index][region] is None:
-        loc.region = res[index][region]
-        had_entries_region = True
+        if not res[index][region] is None:
+            loc.region = res[index][region]
+            had_entries_region = True
 
-    if not res[index][country] is None:
-        loc.country = res[index][country]
-        had_entries_country = True
+        if not res[index][country] is None:
+            loc.country = res[index][country]
+            had_entries_country = True
 
     # if so we can return early
     if had_entries_city and had_entries_region and had_entries_country:
@@ -361,10 +441,10 @@ def location_finder(ll, res, index, nlp):
         # we use nlp here. lookup can handle a title just fine but the result can be off for whatever reason
         # I think using nlp will create fewer problems than it solves
         # the old implementation is still as a comment at the end of the testQuerryToTable.py file
-        if res[index]['title'] is None:
+        if res[index][title] is None:
             doc = nlp('')
         else:
-            doc = nlp(res[index]['title'])
+            doc = nlp(res[index][title])
         fromTitle = [{"Text": entity.text, "Entity Tag": entity.label_} for entity in doc.ents]
         if res[index][location_tab] is None:
             doc = nlp('')
@@ -556,6 +636,7 @@ def removeFalsePositives(dict, input):
 
     return dict
 
+
 # remove events from the query output whos acronym does not match the input
 def removeFalsePostivesEarly(res, input):
 
@@ -564,6 +645,10 @@ def removeFalsePostivesEarly(res, input):
 
     # for wikicfp
     if any('locality' in d for d in res):
+        acronym = 'acronym'
+
+    # for confref
+    if any('ranks' in d for d in res):
         acronym = 'acronym'
 
     to_remove = []
@@ -580,3 +665,80 @@ def removeFalsePostivesEarly(res, input):
 # Function I nicked from stackoverflow: https://stackoverflow.com/a/5320179
 def findWholeWord(w):
     return re.compile(r'\b({0})\b'.format(w), flags=re.IGNORECASE).search
+
+
+# Inverts the dict but keeps the null line as the fist line of the dict. (It expects there to be one)
+def invertDict(dict):
+    out = [dict[0]]
+    for x in range(1, len(dict)):
+        out.append(dict[len(dict) - x])
+    return out
+
+
+# sorts the list of dicts by year but keeps the null line in place and put every event with no year entry at the top
+def sortDictByYear(dict):
+    out = [dict[0]]
+    dict.pop(0)
+    to_exclude = []
+    for x in range(len(dict)):
+        if dict[x]['year'] is None or dict[x]['year'] == 'null':
+            to_exclude.append(x)
+
+    for x in range(len(to_exclude)):
+        out.append(dict[to_exclude[x] - x])
+        del dict[to_exclude[x] - x]
+
+    out = out + qs(dict)
+    return out
+
+
+# a quicksort implementation for our purpose of sorting a LoD by 'year' if the list length exceeds the max amount of
+# recursions this will fail but realistically this won't happen unless our queries are doing sth wrong
+def qs(dict):
+    if len(dict) <= 2:
+        if len(dict) == 2:
+            if int(dict[0]['year']) > int(dict[1]['year']):
+                temp = dict[1]
+                dict[1] = dict[0]
+                dict[0] = temp
+        return dict
+
+    pivot = int(dict[int(len(dict) / 2)]['year'])
+    pivot_element = dict[int(len(dict) / 2)]
+
+    left = dict[:int(len(dict) / 2)]
+    right = dict[int(len(dict) / 2):]
+    right.pop(0)
+
+    temp_add_r = []
+    to_remove = []
+    i = 0
+    for x in left:
+        if int(x['year']) > pivot:
+            temp_add_r.append(x)
+            to_remove.append(i)
+        i = i + 1
+
+    for x in range(len(to_remove)):
+        del left[to_remove[x] - x]
+
+    temp_add_l = []
+    to_remove = []
+    i = 0
+    for x in right:
+        if int(x['year']) <= pivot:
+            temp_add_l.append(x)
+            to_remove.append(i)
+        i = i + 1
+
+    for x in range(len(to_remove)):
+        del right[to_remove[x] - x]
+
+    for x in reversed(range(len(temp_add_r))):
+        right.insert(0, temp_add_r[x])
+
+    for x in reversed(range(len(temp_add_l))):
+        left.append(temp_add_l[x])
+
+    return qs(left) + [pivot_element] + qs(right)
+

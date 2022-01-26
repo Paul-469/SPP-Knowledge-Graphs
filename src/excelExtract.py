@@ -26,6 +26,14 @@ def test(LF):
     search(LF, sheet)
 
 
+def querryPDC(input):
+    ps = openpyxl.load_workbook('all-nov-21.xlsx')
+    sheets = ps.sheetnames
+    # print(sheets)
+    sheet = ps[sheets[0]]  # 'CATALOG'
+    # print(sheet.max_row)
+    return search(input, sheet)
+
 
 def search(LF, ws):
 
@@ -33,15 +41,18 @@ def search(LF, ws):
     #    for cell in row:
     #        print(cell)
 
-    # Searching with the names of events as they are in col 2
+    # Searching with the names of events as they are in col 2 / min_col=2, max_col=2
+    # here the index starts at 1 not 0
+    out_list = []
     count = 2
     for row in ws.iter_rows(min_row=2, min_col=2, max_col=2, max_row=ws.max_row, values_only=True):
         if AcronymIsIn(LF, row[0]):
-            print(row)
-            print(rowGrap(count, ws))
-            print(count)
+            out_list.append(rowGrap(count, ws))
+            # print(row)
+            # print(rowGrap(count, ws))
+            # print(count)
         count += 1
-
+    return out_list
 # Grabbing the entire content of row x as Array. There has to be a better way but it works
 def rowGrap(x, ws):
     for row in ws.iter_rows(min_row=x, min_col=1, max_col=17, max_row=x, values_only=True):

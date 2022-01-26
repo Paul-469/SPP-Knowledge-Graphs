@@ -11,9 +11,11 @@ from corpus import location
 import query
 import sys
 import wikicfpTable
+import proceedingsDotComTable
 
 # Press Umschalt+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from src import confrefTable
 
 
 def print_hi(name):
@@ -21,6 +23,7 @@ def print_hi(name):
     print(f'Hi, {name}')  # Press Strg+F8 to toggle the breakpoint.
 
 
+# TODO consider exchanging title with event title and series title
 # TODO add "python -m spacy download en_core_web_trf" to the install script or else spacy will fail when trying to load
 # spacy needs to be ver. 3.2.1 and you may need to update the core if you update spacy
 # also watch
@@ -29,6 +32,8 @@ if __name__ == '__main__':
     ll = location.LocationLookup()  # initialize locationlookup
     nlp = spacy.load("en_core_web_trf")   # run "python -m spacy download en_core_web_trf" if it fails.
 
+    proceedingsDotComTable.buildFromXLSX(ll, nlp, 'HPCC')
+    confrefTable.buildFromRESTful(ll, nlp, 'HPCC')
     wikicfpTable.buildFromRESTful(ll, nlp, 'HPCC')
     dblpTable.buildFromRESTful(ll, nlp, 'HPCC')
     # query.test()

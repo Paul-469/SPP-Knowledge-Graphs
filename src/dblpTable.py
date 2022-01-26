@@ -72,7 +72,7 @@ def buildFromRESTful(ll, nlp, input):
     table = [
         {'acronym': 'null', 'acronym2': 'null', 'ordinal': 'null', 'year': 'null', 'from': 'null', 'to': 'null',
          'country': 'null', 'region': 'null', 'city': 'null', 'gnd': 'null', 'dblp': 'null', 'wikicfpID': 'null',
-         'or': 'null', 'wikidata': 'null', 'seriesAcronym': 'null', 'title': 'null'}]
+         'or': 'null', 'wikidata': 'null', 'confref': 'null', 'seriesAcronym': 'null', 'title': 'null'}]
 
     res = query.getdblp(input)  # fpl
     removeFalsePostivesEarly(res, input)

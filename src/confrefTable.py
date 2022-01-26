@@ -1,9 +1,9 @@
-# currently work in progress to build a table for an input based on the wikicpf database
+# currently work in progress to build a table for an input based on the confref database
 from tabulate import tabulate
 import query
 from src import tools
 from src.tools import find_ordinal, get_from_to, FTDate, location_finder, fix_ordinal, removeFalsePositives, \
-    removeFalsePostivesEarly
+    removeFalsePostivesEarly, invertDict
 import re
 
 
@@ -13,7 +13,7 @@ def buildFromRESTful(ll, nlp, input):
          'country': 'null', 'region': 'null', 'city': 'null', 'gnd': 'null', 'dblp': 'null', 'wikicfpID': 'null',
          'or': 'null', 'wikidata': 'null', 'confref': 'null', 'seriesAcronym': 'null', 'title': 'null'}]
 
-    res = query.getwikicfp(input)  # fpl
+    res = query.getconfref(input)  # fpl
     removeFalsePostivesEarly(res, input)
 
     for index in range(len(res)):
@@ -52,7 +52,9 @@ def buildFromRESTful(ll, nlp, input):
         region = location.region
         country = location.country
 
-        wikicfpID = res[index]['eventId']
+        confref = res[index]['eventId']
+
+        # Title is the series title as we have no event title
         title = res[index]['title']
 
         table = table + [{'acronym': acronym + '-' + str(year), 'acronym2': acronym + '-' + str(ordinal),
@@ -61,9 +63,10 @@ def buildFromRESTful(ll, nlp, input):
                               "{:02d}".format(int(date.f_m))) + '.' + str("{:02d}".format(int(date.f_y))),
                           'to': str("{:02d}".format(int(date.t_d))) + '.' + str(
                               "{:02d}".format(int(date.t_m))) + '.' + str("{:02d}".format(int(date.t_y))),
-                          'wikicfpID': wikicfpID, 'title': title, 'city': city, 'region': region, 'country': country}]
+                          'confref': confref, 'title': title, 'city': city, 'region': region, 'country': country}]
 
+    table = invertDict(table)
     print(tabulate(table, headers="keys"))
-    print('\n')
-    print(tabulate(fix_ordinal(table), headers="keys"))
-
+    # we have no way of getting ordinals from confref
+    # print('\n')
+    # print(tabulate(fix_ordinal(table), headers="keys"))
