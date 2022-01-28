@@ -26,8 +26,7 @@ def test():
 # if the request fails it returns and prints 'error'
 # if the given datasource is not present it returns and prints 'source not available'
 def getdblp(input:str):
-    url = 'https://conferencecorpus.bitplan.com/eventseries/ßß?format=json'
-    url = url.replace('ßß', input)
+    url = f'https://conferencecorpus.bitplan.com/eventseries/{input}?format=json'
     response = requests.get(url)
     if response:
         print('Success!')
@@ -45,8 +44,7 @@ def getdblp(input:str):
 # if the request fails it returns and prints 'error'
 # if the given datasource is not present it returns and prints 'source not available'
 def getconfref(input:str):
-    url = 'https://conferencecorpus.bitplan.com/eventseries/ßß?format=json'
-    url = url.replace('ßß', input)
+    url = f'https://conferencecorpus.bitplan.com/eventseries/{input}?format=json'
     response = requests.get(url)
     if response:
         print('Success!')
@@ -64,8 +62,7 @@ def getconfref(input:str):
 # if the request fails it returns and prints 'error'
 # if the given datasource is not present it returns and prints 'source not available'
 def getcrossref(input:str):
-    url = 'https://conferencecorpus.bitplan.com/eventseries/ßß?format=json'
-    url = url.replace('ßß', input)
+    url = f'https://conferencecorpus.bitplan.com/eventseries/{input}?format=json'
     response = requests.get(url)
     if response:
         print('Success!')
@@ -83,8 +80,7 @@ def getcrossref(input:str):
 # if the request fails it returns and prints 'error'
 # if the given datasource is not present it returns and prints 'source not available'
 def getwikicfp(input:str):
-    url = 'https://conferencecorpus.bitplan.com/eventseries/ßß?format=json'
-    url = url.replace('ßß', input)
+    url = f'https://conferencecorpus.bitplan.com/eventseries/{input}?format=json'
     response = requests.get(url)
     if response:
         print('Success!')
@@ -102,8 +98,7 @@ def getwikicfp(input:str):
 # if the request fails it returns and prints 'error'
 # if the given datasource is not present it returns and prints 'source not available'
 def getgnd(input:str):
-    url = 'https://conferencecorpus.bitplan.com/eventseries/ßß?format=json'
-    url = url.replace('ßß', input)
+    url = f'https://conferencecorpus.bitplan.com/eventseries/{input}?format=json'
     response = requests.get(url)
     if response:
         print('Success!')
@@ -121,8 +116,7 @@ def getgnd(input:str):
 # if the request fails it returns and prints 'error'
 # if the given datasource is not present it returns and prints 'source not available'
 def getwikidata(input:str):
-    url = 'https://conferencecorpus.bitplan.com/eventseries/ßß?format=json'
-    url = url.replace('ßß', input)
+    url = f'https://conferencecorpus.bitplan.com/eventseries/{input}?format=json'
     response = requests.get(url)
     if response:
         print('Success!')
@@ -140,8 +134,7 @@ def getwikidata(input:str):
 # if the request fails it returns and prints 'error'
 # Important: we need to check whether our desired source is present in the response like in the functions above
 def getall(input:str):
-    url = 'https://conferencecorpus.bitplan.com/eventseries/ßß?format=json'
-    url = url.replace('ßß', input)
+    url = f'https://conferencecorpus.bitplan.com/eventseries/{input}?format=json'
     response = requests.get(url)
     if response:
         print('Success!')

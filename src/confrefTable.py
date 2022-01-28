@@ -59,10 +59,8 @@ def buildFromRESTful(ll, nlp, input):
 
         table = table + [{'acronym': acronym + '-' + str(year), 'acronym2': acronym + '-' + str(ordinal),
                           'ordinal': str(ordinal), 'year': year, 'seriesAcronym': acronym,
-                          'from': str("{:02d}".format(int(date.f_d))) + '.' + str(
-                              "{:02d}".format(int(date.f_m))) + '.' + str("{:02d}".format(int(date.f_y))),
-                          'to': str("{:02d}".format(int(date.t_d))) + '.' + str(
-                              "{:02d}".format(int(date.t_m))) + '.' + str("{:02d}".format(int(date.t_y))),
+                          'from':  f'{str("{:02d}".format(int(date.f_d)))}.{str("{:02d}".format(int(date.f_m)))}.{str("{:02d}".format(int(date.f_y)))}',
+                          'to':  f'{str("{:02d}".format(int(date.t_d)))}.{str("{:02d}".format(int(date.t_m)))}.{str("{:02d}".format(int(date.t_y)))}',
                           'confref': confref, 'title': title, 'city': city, 'region': region, 'country': country}]
 
     table = invertDict(table)
