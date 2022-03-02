@@ -827,8 +827,6 @@ def addGhostEvents(dict, freq):
     x = 1
     while x < (len(out)-1):
         if not out[x]['ordinal'] == 'null' and not out[x-1]['ordinal'] == 'null':
-            print(int(out[x]['ordinal']) + 1)
-            print(int(out[x+1]['ordinal']))
             if int(out[x]['ordinal']) > 0:
                 if int(out[x]['ordinal']) + 1 < int(dict[x+1]['ordinal']):
                     ord = int(out[x]['ordinal']) + 1
