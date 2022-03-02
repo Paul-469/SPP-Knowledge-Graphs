@@ -3,7 +3,7 @@ from tabulate import tabulate
 import query
 from src import tools
 from src.tools import find_ordinal, get_from_to, FTDate, location_finder, fix_ordinal, removeFalsePositives, \
-    removeFalsePostivesEarly, invertDict
+    removeFalsePostivesEarly, invertDict, freq
 import re
 
 
@@ -65,6 +65,7 @@ def buildFromRESTful(ll, nlp, input):
 
     table = invertDict(table)
     print(tabulate(table, headers="keys"))
+    freq(table)
     # we have no way of getting ordinals from confref
     # print('\n')
     # print(tabulate(fix_ordinal(table), headers="keys"))

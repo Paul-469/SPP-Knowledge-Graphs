@@ -98,6 +98,28 @@ month_dict = {
     'nov': 11,
     'dec': 12,
 }
+frequency_dict = {
+    'annual': 1,
+    'annu.': 1,
+    'ann.': 1,
+    'biannual': 2,
+    'biannu.': 2,
+    'quarterly': 4,
+    'qtly.': 4,
+    'qr.': 4,
+    'weekly': 52,
+    'wkly': 52,
+    'mthly.': 12,
+    'mth.': 12,
+    'monthly': 12,
+    'bimonthly': 24,
+    'bi-monthly': 24,
+    'biennial': 200,
+    'triennial': 300,
+    'quadrennial': 400,
+    'quinquennial': 500,
+    'decennial': 1000,
+}
 
 
 @dataclass
@@ -381,7 +403,7 @@ def get_from_to(foundEntities, res, index, nlp):
 
 
 # Returns the location either from the location entry or title
-# also for cc Exciter UK or United Kingdom needs to be patched
+# also for cc Exciter UK or United Kingdom needs to be patched also Munich is most likely to be München
 # also as we use nlp before location look up we might need to catch the online case
 def location_finder(ll, res, index, nlp):
     # a bunch of vars that should be self explanatory
@@ -672,6 +694,154 @@ def invertDict(dict):
     out = [dict[0]]
     for x in range(1, len(dict)):
         out.append(dict[len(dict) - x])
+    return out
+
+
+# determine the frequency of an event. We assume an ordered data set and that we only have one series in the table and
+# deduplicated
+def freq(dict):
+    fr = 0
+    no_conflict = True
+
+    # first by title
+    for x in range(1, len(dict)):
+        for key in frequency_dict:
+            if not dict[x]['title'] is None:
+                if key in dict[x]['title']:
+                    if frequency_dict[key] == fr or fr == 0:
+                        fr = frequency_dict[key]
+                    else:
+                        no_conflict = False
+
+    # determine via years and ordinals
+    if fr == 0:
+        first_ord = 0
+        if not dict[1]['ordinal'] == 'null':
+            first_ord = int(dict[1]['ordinal'])
+        else:
+            for x in range(1, len(dict)):
+                if not dict[x]['ordinal'] == 'null':
+                    first_ord = int(dict[1]['ordinal'])
+        if first_ord == 0:
+            return 'could not be determined'
+
+        last_ord = 0
+        if not dict[-1]['ordinal'] == 'null':
+            last_ord = int(dict[-1]['ordinal'])
+        else:
+            for x in range(len(dict), 1, -1):
+                if not dict[x]['ordinal'] == 'null':
+                    last_ord = int(dict[1]['ordinal'])
+        if last_ord == 0:
+            return 'could not be determined'
+        if last_ord == first_ord:
+            return 'could not be determined'
+
+        first_year = int(dict[1]['year'])
+        last_year = int(dict[-1]['year'])
+
+        no_of_present_events = last_ord - first_ord
+        years_covered = last_year - first_year
+
+        # print(no_of_present_events)
+        # print(years_covered)
+        # Note: Python 3.10 has case switch statements (match case) python 3.9 does not...
+        # and I'm not building dict 'solution' for that so an if-else chain it is
+        if no_of_present_events == years_covered:
+            fr = 1
+        else:
+            if no_of_present_events == years_covered * 2:
+                fr = 2
+            else:
+                if no_of_present_events == years_covered * 4:
+                    fr = 4
+                else:
+                    if no_of_present_events == years_covered * 12:
+                        fr = 12
+                    else:
+                        if no_of_present_events == years_covered * 24:
+                            fr = 24
+                        else:
+                            if no_of_present_events == years_covered * 52:
+                                fr = 52
+                            else:
+                                if no_of_present_events == years_covered / 2:
+                                    fr = 200
+                                else:
+                                    if no_of_present_events == years_covered / 3:
+                                        fr = 300
+                                    else:
+                                        if no_of_present_events == years_covered / 4:
+                                            fr = 400
+                                        else:
+                                            if no_of_present_events == years_covered / 5:
+                                                fr = 500
+                                            else:
+                                                if no_of_present_events == years_covered / 10:
+                                                    fr = 1000
+
+    # print(fr)
+    if fr == 0 or not no_conflict:
+        return 'could not be determined'
+    else:
+        keys = [k for k, v in frequency_dict.items() if v == fr]
+        return keys[0]
+
+
+# adds place holder for missing events to a list. We assume the list is deduplicated, ordered and only contains one
+# series; the freq is expected to be in format described in the dict
+def addGhostEvents(dict, freq):
+    out = dict
+    acr = 'null'
+    yr = 0
+    yr_min = 0
+    multiplication = False
+    first_ord = 0
+    if not dict[1]['ordinal'] == 'null':
+        first_ord = int(dict[1]['ordinal'])
+
+    if not dict[1]['year'] == 'null':
+        yr = int(dict[1]['year'])
+
+    if not dict[1]['seriesAcronym'] == 'null':
+        acr = dict[1]['seriesAcronym']
+
+    factor = frequency_dict.get(freq, 0)
+    if factor >= 100:
+        factor = factor / 100
+        multiplication = True
+
+    # we add all ghosts until the first ord
+    if first_ord != 1 and first_ord !=0:
+        for x in range(first_ord-1, 0, -1):
+            ord = x
+            if multiplication:
+                yr_min = yr_min - (1 * factor)
+            else:
+                yr_min = yr_min - (1 / factor)
+            yr_temp = yr + int(yr_min)
+            out.insert(1, {'acronym': acr + '-' + str(yr_temp), 'acronym2': acr + '-' + str(ord),
+                           'ordinal': str(ord), 'year': yr_temp, 'seriesAcronym': acr, 'from':  'null', 'to':  'null', 'title': 'ghost', 'city': 'null', 'region': 'null', 'country': 'null'})
+
+    # A not too accurate way of creating ghost entries with year but it should fill ordinal gaps
+    x = 1
+    while x < (len(out)-1):
+        if not out[x]['ordinal'] == 'null' and not out[x-1]['ordinal'] == 'null':
+            print(int(out[x]['ordinal']) + 1)
+            print(int(out[x+1]['ordinal']))
+            if int(out[x]['ordinal']) > 0:
+                if int(out[x]['ordinal']) + 1 < int(dict[x+1]['ordinal']):
+                    ord = int(out[x]['ordinal']) + 1
+                    if not out[x]['year'] == 'null':
+                        yr = int(out[x]['year'])
+                        if multiplication:
+                            yr = yr - (1 * factor)
+                        else:
+                            yr = yr - (1 / factor)
+                    out.insert(x, {'acronym': acr + '-' + str(yr), 'acronym2': acr + '-' + str(ord),
+                                   'ordinal': str(ord), 'year': yr, 'seriesAcronym': acr, 'from': 'null', 'to': 'null', 'title': 'ghost', 'city': 'null', 'region': 'null', 'country': 'null'})
+        x += 1
+
     return out
 
 

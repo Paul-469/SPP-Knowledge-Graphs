@@ -25,6 +25,8 @@ def print_hi(name):
 
 # TODO consider exchanging title with event title and series title
 # TODO add "python -m spacy download en_core_web_trf" to the install script or else spacy will fail when trying to load
+# TODO implement deduplication on the returned list of dicts especially early for wikicfp
+# TODO determine if multiple series are in one response and separate them
 # spacy needs to be ver. 3.2.1 and you may need to update the core if you update spacy
 # also watch
 # Press the green button in the gutter to run the script.
@@ -32,7 +34,7 @@ if __name__ == '__main__':
     ll = location.LocationLookup()  # initialize locationlookup
     nlp = spacy.load("en_core_web_trf")   # run "python -m spacy download en_core_web_trf" if it fails.
 
-    proceedingsDotComTable.buildFromXLSX(ll, nlp, 'HPCC')
+    # proceedingsDotComTable.buildFromXLSX(ll, nlp, 'HPCC')
     confrefTable.buildFromRESTful(ll, nlp, 'HPCC')
     wikicfpTable.buildFromRESTful(ll, nlp, 'HPCC')
     dblpTable.buildFromRESTful(ll, nlp, 'HPCC')

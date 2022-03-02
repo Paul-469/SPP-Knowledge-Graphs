@@ -3,7 +3,7 @@ from tabulate import tabulate
 import query
 from src import tools
 from src.tools import find_ordinal, get_from_to, FTDate, location_finder, fix_ordinal, removeFalsePositives, \
-    removeFalsePostivesEarly
+    removeFalsePostivesEarly, freq, addGhostEvents
 import re
 
 
@@ -64,4 +64,7 @@ def buildFromRESTful(ll, nlp, input):
     # print(tabulate(table, headers="keys"))
     print('\n')
     print(tabulate(fix_ordinal(table), headers="keys"))
+    freq(table)
+    print(tabulate(addGhostEvents(fix_ordinal(table), 'annual'), headers="keys"))
+
 
