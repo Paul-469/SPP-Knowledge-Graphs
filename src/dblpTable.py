@@ -3,7 +3,7 @@ from tabulate import tabulate
 import query
 from src import tools
 from src.tools import find_ordinal, get_from_to, FTDate, location_finder, fix_ordinal, removeFalsePositives, \
-    removeFalsePostivesEarly, freq
+    removeFalsePostivesEarly, freq, isThereMoreThanOne, year_integrity, ordinal_integrity
 
 
 # deprecated!!!
@@ -126,3 +126,9 @@ def buildFromRESTful(ll, nlp, input):
     # print('\n')
     # print(tabulate(removeFalsePositives(table, input), headers="keys"))
     freq(table)
+    if year_integrity(table) and ordinal_integrity(table):
+        temp = isThereMoreThanOne(table)
+        for x in range(len(temp)):
+            print(tabulate(temp[x], headers="keys"))
+
+

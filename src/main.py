@@ -16,6 +16,7 @@ import proceedingsDotComTable
 # Press Umschalt+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 from src import confrefTable
+from src.neo_4j import HelloWorldExample
 
 
 def print_hi(name):
@@ -31,12 +32,19 @@ def print_hi(name):
 # also watch
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
+
+    # greeter = HelloWorldExample("bolt://127.0.0.1:7687", "neo4j", "kgl")
+    # greeter.print_greeting("hello, world")
+    # greeter.close()
+
+    # sys.exit()
+
     ll = location.LocationLookup()  # initialize locationlookup
     nlp = spacy.load("en_core_web_trf")   # run "python -m spacy download en_core_web_trf" if it fails.
 
     # proceedingsDotComTable.buildFromXLSX(ll, nlp, 'HPCC')
-    confrefTable.buildFromRESTful(ll, nlp, 'HPCC')
-    wikicfpTable.buildFromRESTful(ll, nlp, 'HPCC')
+    # confrefTable.buildFromRESTful(ll, nlp, 'HPCC')
+    # wikicfpTable.buildFromRESTful(ll, nlp, 'HPCC')
     dblpTable.buildFromRESTful(ll, nlp, 'HPCC')
     # query.test()
     sys.exit()

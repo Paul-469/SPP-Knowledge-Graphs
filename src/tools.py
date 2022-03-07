@@ -843,6 +843,86 @@ def addGhostEvents(dict, freq):
     return out
 
 
+# checks whether there are proper ordinals for all entries in a list
+def ordinal_integrity(dict):
+    for x in range(1, len(dict)):
+        if not type(dict[x]['ordinal']) == int:
+            if not dict[x]['ordinal'].isnumeric():
+                return False
+        else:
+            if dict[x]['ordinal'] < 1:
+                return False
+    return True
+
+
+# checks whether there are proper years for all entries in a list
+def year_integrity(dict):
+    for x in range(1, len(dict)):
+        if not type(dict[x]['year']) == int:
+            if not dict[x]['year'].isnumeric():
+                return False
+        else:
+            if dict[x]['year'] < 1:
+                return False
+    return True
+
+
+# determine if there is more than one annual series in an output we expect there to be an ordinal and year for
+# every event
+# !!!!!!!!!!!! returns the individual series not a bool !!!!!!!!!!!!!!!!!!!
+def isThereMoreThanOne(dict):
+    if len(dict) <=2:
+        return
+    last_ord = dict[1]['ordinal']
+    last_year = dict[1]['year']
+    ends = []
+
+    for x in range(2, len(dict)):
+
+        if int(last_ord) + 1 == int(dict[x]['ordinal']) and int(last_year) + 1 == int(dict[x]['year']):
+            last_ord = dict[x]['ordinal']
+            last_year = dict[x]['year']
+        else:
+            if int(last_year) + 1 >= int(dict[x]['year']):
+                ends.append(x-1)
+                last_ord = dict[x]['ordinal']
+                last_year = dict[x]['year']
+            else:
+                if int(last_ord) + 1 < int(dict[x]['ordinal']) and int(last_year) + 1 < int(dict[x]['year']):
+                    if x < len(dict):
+                        if abs(last_ord-int(dict[x]['ordinal'])) == abs(last_year - int(dict[x]['year'])):
+                            last_ord = dict[x]['ordinal']
+                            last_year = dict[x]['year']
+                        else:
+                            ends.append(x - 1)
+                            last_ord = dict[x]['ordinal']
+                            last_year = dict[x]['year']
+
+    out = [dict]
+    for x in range(len(ends)):
+        temp = out[0]
+        out.append(temp[:int(ends[x])+1])
+        temp = temp[ends[x]:len(temp)]
+        temp.insert(0, {'acronym': 'null', 'acronym2': 'null', 'ordinal': 'null', 'year': 'null',
+                                           'from': 'null', 'to': 'null', 'country': 'null', 'region': 'null',
+                                           'city': 'null', 'gnd': 'null', 'dblp': 'null', 'wikicfpID': 'null',
+                                           'or': 'null', 'wikidata': 'null', 'confref': 'null', 'seriesAcronym': 'null',
+                                           'title': 'null'})
+        out[0] = temp
+
+    # we put the longest list in front
+    max_len = 0
+    index = 0
+    for x in range(len(out)):
+        if max_len < len(out[x]):
+            max_len = len(out[x])
+            index = x
+    out.insert(0, out[index])
+    out.pop(x)
+
+    return out
+
+
 # sorts the list of dicts by year but keeps the null line in place and put every event with no year entry at the top
 def sortDictByYear(dict):
     out = [dict[0]]
