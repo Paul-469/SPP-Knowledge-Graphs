@@ -902,7 +902,7 @@ def isThereMoreThanOne(dict):
     for x in range(len(ends)):
         temp = out[0]
         out.append(temp[:int(ends[x])+1])
-        temp = temp[ends[x]:len(temp)]
+        temp = temp[ends[x]+1:len(temp)]
         temp.insert(0, {'acronym': 'null', 'acronym2': 'null', 'ordinal': 'null', 'year': 'null',
                                            'from': 'null', 'to': 'null', 'country': 'null', 'region': 'null',
                                            'city': 'null', 'gnd': 'null', 'dblp': 'null', 'wikicfpID': 'null',

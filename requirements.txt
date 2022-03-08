@@ -8,6 +8,7 @@ OSMPythonTools==0.3.0
 spacy==3.2.1
 dataclasses
 requests
+neo4j
 
 lxml
 bs4
