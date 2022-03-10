@@ -40,6 +40,12 @@ class neo:
             response = session.write_transaction(self.add_to_graph1, content, cat)
             print(response)
 
+    # Adds a node to the graph even if the node already exists
+    def add_node_c1(self, content, cat):
+        with self.driver.session() as session:
+            response = session.write_transaction(self.add_to_graph11, content, cat)
+            print(response)
+
     # Adds a relation between two nodes to the graph and tries to reuse existing nodes if possible else new are created
     def add_two_nodes(self, content1, cat1, content2, cat2, relation):
         with self.driver.session() as session:
@@ -66,6 +72,11 @@ class neo:
             response = session.write_transaction(self.add_to_graph22, content1, cat1, content2, cat2, relation)
             print(response)
 
+    # Adds a relation between two nodes and will always create new nodes for each even if it means duplication
+    def add_property(self, node, type, prop, value):
+        with self.driver.session() as session:
+            response = session.write_transaction(self.add_property_to, node, type, prop, value)
+            print(response)
 
     @staticmethod
     def add_to_graph1(tx, content, cat):
@@ -109,6 +120,17 @@ class neo:
         result = tx.run(query, content1=content1, content2=content2)
         return result.single()[0]
 
+    @staticmethod
+    def add_to_graph22(tx, content1, cat1, content2, cat2, relation):
+        query = (
+            f"MERGE (a:{cat1} {{name: $content1}}) "
+            f"CREATE (b:{cat2} {{name: $content2}}) "
+            f"MERGE (a)-[:{relation}]->(b)"
+            "RETURN a.message + ', from node ' + id(a)"
+        )
+        result = tx.run(query, content1=content1, content2=content2)
+        return result.single()[0]
+
 
     @staticmethod
     def add_to_graph212(tx, content1, cat1, content2, cat2, relation):
@@ -119,5 +141,16 @@ class neo:
             "RETURN a.message + ', from node ' + id(a)"
         )
         result = tx.run(query, content1=content1, content2=content2)
+        return result.single()[0]
+
+
+    @staticmethod
+    def add_property_to(tx, node, type, prop, value):
+        query = (
+            f"MATCH (a:{type} {{name: '{node}'}}) "
+            f"SET a.{prop} = '{value}'"
+            "RETURN a.message + ', from node ' + id(a)"
+        )
+        result = tx.run(query)
         return result.single()[0]
 

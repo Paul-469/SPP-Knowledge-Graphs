@@ -5,6 +5,7 @@ from src import tools
 from src.tools import find_ordinal, get_from_to, FTDate, location_finder, fix_ordinal, removeFalsePositives, \
     removeFalsePostivesEarly, freq, addGhostEvents
 import re
+import pandas as pd
 
 
 def buildFromRESTful(ll, nlp, input):

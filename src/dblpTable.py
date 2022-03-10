@@ -103,7 +103,7 @@ def buildFromRESTful(ll, nlp, input):
 
         date = get_from_to(found_entities, res, index, nlp)
         if date is None:
-            date = FTDate
+            date = FTDate()
 
 
         location = tools.location_finder(ll, res, index, nlp)
@@ -130,5 +130,7 @@ def buildFromRESTful(ll, nlp, input):
         temp = isThereMoreThanOne(table)
         for x in range(len(temp)):
             print(tabulate(temp[x], headers="keys"))
+        table = temp[0]
 
+    return table
 

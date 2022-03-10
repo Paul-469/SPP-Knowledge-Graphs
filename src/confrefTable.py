@@ -66,6 +66,7 @@ def buildFromRESTful(ll, nlp, input):
     table = invertDict(table)
     print(tabulate(table, headers="keys"))
     freq(table)
+    return table
     # we have no way of getting ordinals from confref
     # print('\n')
     # print(tabulate(fix_ordinal(table), headers="keys"))

@@ -46,7 +46,7 @@ def buildFromXLSX(ll, nlp, input):
 
         acronym = res[index][3]
         if acronym is None:
-            acronym = 'missing'
+            acronym = input    # 'missing' i think we can do that for this source as we dont find an acronym
 
         ordinal = find_ordinal(found_entities, res, index)
         if ordinal is None:
@@ -79,5 +79,6 @@ def buildFromXLSX(ll, nlp, input):
     # print(tabulate(table, headers="keys"))
     print('\n')
     print(tabulate(fix_ordinal(table), headers="keys"))
+    return table
     # print('\n')
     # print(tabulate(removeFalsePositives(table, input), headers="keys"))
