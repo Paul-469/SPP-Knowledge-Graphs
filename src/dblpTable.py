@@ -1,4 +1,6 @@
 # currently work in progress to build a table for an input based on the dblp database
+import re
+
 from tabulate import tabulate
 import query
 from src import tools
@@ -75,7 +77,18 @@ def buildFromRESTful(ll, nlp, input):
          'or': 'null', 'wikidata': 'null', 'confref': 'null', 'seriesAcronym': 'null', 'title': 'null'}]
 
     res = query.getdblp(input)  # fpl
+    if res == 'error' or res == 'source not available':
+        print(res)
+        return
+    # print(tabulate(res, headers="keys"))
+
     removeFalsePostivesEarly(res, input)
+
+    # print(tabulate(res, headers="keys"))
+    if len(res) == 0:
+        print('no results')
+        return
+    # print(tabulate(res, headers="keys"))
 
     for index in range(len(res)):
         # TODO figure out a way so that ordinals are assigned to the correct event if more than one are in the title
@@ -87,11 +100,14 @@ def buildFromRESTful(ll, nlp, input):
         else:
             doc = nlp(res[index]['title'])
         found_entities = [{"Text": entity.text, "Entity Tag": entity.label_} for entity in doc.ents]
+        # print(tabulate(found_entities, headers="keys"))
 
         # TODO more in None checks
         acronym = res[index]['series']
         if acronym is None:
             acronym = 'missing'
+        acronym = re.sub(r'[0-9]', r'', acronym)
+        acronym = acronym.replace(" ", "")
 
         ordinal = find_ordinal(found_entities, res, index)
         if ordinal is None:
@@ -110,6 +126,14 @@ def buildFromRESTful(ll, nlp, input):
         city = location.city
         region = location.region
         country = location.country
+
+        # print(tabulate(res, headers="keys"))
+        # print(date.f_d)
+        # print(date.f_m)
+        # print(date.f_y)
+        # print(date.t_d)
+        # print(date.t_m)
+        # print(date.t_y)
 
         dblp = res[index]['eventId']
         title = res[index]['title']

@@ -372,16 +372,24 @@ def get_from_to(foundEntities, res, index, nlp):
         # start and end day
         found_day = False
         for x in range(len(numbers)):
+            # print(numbers)
             if '-' in numbers[x]:
-                found_day = True
-                if found_year:  # sometimes the Year is in this which would result in a wonky day number
-                    if temp_result.f_y in numbers[x]:
-                        numbers[x] = str(numbers[x]).replace(str(temp_result.f_y), '', 1)
-                days = numbers[x].split('-')
-                temp_result.f_d = days[0]
-                temp_result.t_d = days[1]
+                # print(numbers[x].split('-', 1))
+                # print(type(numbers[x].split('-', 1)[0]))
+                # print(type(numbers[x].split('-', 1)[1]))
+                # type(numbers[x].split('-', 1)[0]) is str and type(numbers[x].split('-', 1)[1]) is str
+                if not numbers[x].split('-', 1)[0] == '' and not numbers[x].split('-', 1)[1] == '':
+                    found_day = True
+                    if found_year:  # sometimes the Year is in this which would result in a wonky day number
+                        if temp_result.f_y in numbers[x]:
+                            numbers[x] = str(numbers[x]).replace(str(temp_result.f_y), '', 1)
+                    days = numbers[x].split('-')
+                    temp_result.f_d = days[0]
+                    temp_result.t_d = days[1]
         if not found_day:
-            if temp_result.t_m != temp_result.f_m:
+            # print(temp_result.f_m)
+            # print(temp_result.t_m)
+            if not temp_result.t_m == temp_result.f_m:
                 if len(numbers) > 2:
                     numbers.sort(reverse=False)
                     temp_result.f_d = numbers[1]  # from should be the lager number as it is the last day of the month
@@ -455,6 +463,14 @@ def location_finder(ll, res, index, nlp):
             loc.country = res[index][country]
             had_entries_country = True
 
+    # print(res[index][city])
+    # print(loc.city)
+    # print(res[index][region])
+    # print(loc.region)
+    # print(res[index][country])
+    # print(loc.country)
+    # print(res[index])
+
     # if so we can return early
     if had_entries_city and had_entries_region and had_entries_country:
         return return_val
@@ -498,12 +514,18 @@ def location_finder(ll, res, index, nlp):
             if no_further_location_data:
                 loc.region = "null"
             else:
-                loc.region = str(result._region)[str(result._region).find("(") + 1:str(result._region).find(")")]
+                if hasattr(result, '_region'):
+                    loc.region = str(result._region)[str(result._region).find("(") + 1:str(result._region).find(")")]
+                else:
+                    loc.region = "null"
         if not had_entries_region:
             if no_further_location_data:
                 loc.country = "null"
             else:
-                loc.country = str(result._country)[str(result._country).find("(") + 1:str(result._country).find(")")]
+                if hasattr(result, '_country'):
+                    loc.country = str(result._country)[str(result._country).find("(") + 1:str(result._country).find(")")]
+                else:
+                    loc.country = "null"
 
     return return_val
 
@@ -675,7 +697,7 @@ def removeFalsePostivesEarly(res, input):
 
     to_remove = []
     for x in range(len(res)):
-        if not findWholeWord(input)(res[x][acronym]):
+        if findWholeWord(input)(res[x][acronym]) is None:
             to_remove.append(x)
 
     for x in range(len(to_remove)):
