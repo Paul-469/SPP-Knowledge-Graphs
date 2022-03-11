@@ -95,7 +95,7 @@ from sqlalchemy import Column
 import sqlalchemy.types as types
 from flask import redirect,render_template, request, flash, Markup, url_for, abort
 
-class Message(db.Model):
+class Message2(db.Model):
     id = Column(types.Integer, primary_key=True)
     text = Column(types.Text, nullable=False)
     author = Column(types.String(100), nullable=False)
@@ -103,13 +103,7 @@ class Message(db.Model):
     draft = Column(types.Boolean, default=False, nullable=False)
     create_time = Column(types.Integer, nullable=False, unique=True)
 
-class Message2(db.Model):
-    acronym = Column(types.String(100), primary_key=True)
-    acronym2 = Column(types.String(100), nullable=False)
-    ordinal = Column(types.String(100), nullable=False)
-    year = Column(types.String(100), nullable=False)
-    country = Column(types.String(100), nullable=False)
-    dblp = Column(types.String(100), nullable=False)
+
 
 class HelloWeb(AppWrap):
     '''
@@ -161,8 +155,14 @@ class HelloWeb(AppWrap):
         '''
         self.db.drop_all()
         self.db.create_all()
+        ll = location.LocationLookup()  # initialize locationlookup
+        nlp = spacy.load("en_core_web_trf")  # run "python -m spacy download en_core_web_trf" if it fails.
 
-        self.initMessages(limit)
+
+        res = [dblpTable.buildFromRESTful(ll, nlp, 'HPCC')]
+        list = [1]
+        res = merge_tables(res,list)
+        dictToMessages(res, self)
 
     def message_delete(self, message_id):
         message = Message.query.get(message_id)
@@ -210,7 +210,7 @@ class HelloWeb(AppWrap):
         test table
         '''
         page = request.args.get('page', 1, type=int)
-        pagination = Message.query.paginate(page, per_page=10)
+        pagination = Message.query.paginate(page, per_page=20)
         messages = pagination.items
         titles = [('id', '#'), ('text', 'Message'), ('author', 'Author'), ('category', 'Category'), ('draft', 'Draft'),
                   ('create_time', 'Create Time')]
@@ -230,23 +230,50 @@ class HelloWeb(AppWrap):
 helloWeb = HelloWeb()
 app = helloWeb.app
 
+class Message(db.Model):
+    acronym = Column(types.String(100), primary_key=True)
+    acronym2 = Column(types.String(100), nullable=True)
+    ordinal = Column(types.String(100), nullable=True)
+    year = Column(types.String(100), nullable=True)
+    from_date = Column(types.String(100), nullable=True)
+    to_date = Column(types.String(100), nullable=True)
+    country = Column(types.String(100), nullable=True)
+    region = Column(types.String(100), nullable=True)
+    city = Column(types.String(100), nullable=True)
+    gnd = Column(types.String(100), nullable=True)
+    dblp = Column(types.String(100), nullable=True)
+    wikicfpID = Column(types.String(100), nullable=True)
+    or_id = Column(types.String(100), nullable=True)
+    wikidata = Column(types.String(100), nullable=True)
+    confref = Column(types.String(100), nullable=True)
+    seriesAcronym = Column(types.String(100), nullable=True)
+    title = Column(types.String(100), nullable=True)
+
 def dictToMessages(ldict, app):
-    for x in range(1,len(ldict)):
-
-        keys = ldict[x].keys()
-        cur = ldict[x]['acronym']
-
-
+    for x in range(1, len(ldict)):
 
         m = Message(
-            text='Test message {}'.format(i + 1),
-            author='Author {}'.format(i + 1),
-            category='Category {}'.format(i + 1),
-            create_time=4321 * (i + 1)
+            acronym=ldict[x]['acronym'],
+            acronym2=ldict[x]['acronym2'],
+            ordinal=ldict[x]['ordinal'],
+            year=ldict[x]['year'],
+            country=ldict[x]['country'],
+            from_date=ldict[x]['from'],
+            to_date = ldict[x]['to'],
+            region = ldict[x]['region'],
+            city = ldict[x]['city'],
+            gnd = ldict[x]['gnd'],
+            dblp = ldict[x]['dblp'],
+            wikicfpID = ldict[x]['wikicfpID'],
+            or_id = ldict[x]['or'],
+            wikidata = ldict[x]['wikidata'],
+            confref = ldict[x]['confref'],
+            seriesAcronym = ldict[x]['seriesAcronym'],
+            title = ldict[x]['title'],
         )
 
         app.db.session.add(m)
-        app.db.session.commit()
+    app.db.session.commit()
 
 
 if __name__ == '__main__':
