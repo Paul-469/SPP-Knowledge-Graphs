@@ -85,8 +85,8 @@ def limited_hardcoded_graph_addition_demo(neo_DB):
 if __name__ == '__main__':
 
 
-    # print("Have you done everything described in meo_4j.py? If so remove the print and following sys.exit()")
-    # sys.exit()
+    print("Have you done everything described in meo_4j.py? If so remove the print and following sys.exit()")
+    sys.exit()
 
     # neo_DB = neo("bolt://127.0.0.1:7687", "neo4j", "kgl")
     # limited_hardcoded_graph_addition_demo(neo_DB)
