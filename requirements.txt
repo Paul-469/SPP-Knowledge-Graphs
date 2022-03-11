@@ -1,4 +1,4 @@
-ConferenceCorpus
+ConferenceCorpus==0.0.26
 tabulate
 pylodstorage
 openpyxl
