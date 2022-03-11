@@ -1,4 +1,4 @@
-ConferenceCorpus
+ConferenceCorpus==0.0.26
 tabulate
 pylodstorage
 openpyxl
@@ -9,6 +9,8 @@ spacy==3.2.1
 dataclasses
 requests
 neo4j
+pyFlaskBootstrap4
+
 
 lxml
 bs4
