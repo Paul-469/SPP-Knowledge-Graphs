@@ -673,6 +673,10 @@ def removeFalsePostivesEarly(res, input):
     if any('ranks' in d for d in res):
         acronym = 'acronym'
 
+    # for gnd
+    if any('regionIso' in d for d in res):
+        acronym = 'acronym'
+
     to_remove = []
     for x in range(len(res)):
         if not findWholeWord(input)(res[x][acronym]):
