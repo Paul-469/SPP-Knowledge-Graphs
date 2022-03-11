@@ -1,7 +1,9 @@
 # currently work in progress to build a table for an input based on the proceedings.com database
+import re
+
 from tabulate import tabulate
 from src import tools, excelExtract
-from src.tools import find_ordinal, get_from_to, FTDate, fix_ordinal, sortDictByYear
+from src.tools import find_ordinal, get_from_to, FTDate, fix_ordinal, sortDictByYear, removeFalsePostivesEarly
 
 
 # Important In the output the index starts at 0 but in the search it starts at one not to be confused use start at 0
@@ -33,6 +35,16 @@ def buildFromXLSX(ll, nlp, input):
 
     res = excelExtract.querryPDC(input)  # fpl
 
+    if res == 'error' or res == 'source not available':
+        print(res)
+        return
+    # print(tabulate(res, headers="keys"))
+    # removeFalsePostivesEarly(res, input)
+
+    if len(res) == 0:
+        print('no results')
+        return
+
     for index in range(len(res)):
         # TODO figure out a way so that ordinals are assigned to the correct event if more than one are in the title
         #  Note: this somewhat works now but we have to deduct trust score for details like that when multiple events
@@ -46,7 +58,9 @@ def buildFromXLSX(ll, nlp, input):
 
         acronym = res[index][3]
         if acronym is None:
-            acronym = 'missing'
+            acronym = input    # 'missing' i think we can do that for this source as we dont find an acronym
+        acronym = re.sub(r'[0-9]', r'', acronym)
+        acronym = acronym.replace(" ", "")
 
         ordinal = find_ordinal(found_entities, res, index)
         if ordinal is None:
@@ -79,5 +93,6 @@ def buildFromXLSX(ll, nlp, input):
     # print(tabulate(table, headers="keys"))
     print('\n')
     print(tabulate(fix_ordinal(table), headers="keys"))
+    return table
     # print('\n')
     # print(tabulate(removeFalsePositives(table, input), headers="keys"))

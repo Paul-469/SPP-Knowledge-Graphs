@@ -5,6 +5,7 @@ from src import tools
 from src.tools import find_ordinal, get_from_to, FTDate, location_finder, fix_ordinal, removeFalsePositives, \
     removeFalsePostivesEarly, freq, addGhostEvents
 import re
+import pandas as pd
 
 
 def buildFromRESTful(ll, nlp, input):
@@ -14,7 +15,16 @@ def buildFromRESTful(ll, nlp, input):
          'or': 'null', 'wikidata': 'null', 'confref': 'null', 'seriesAcronym': 'null', 'title': 'null'}]
 
     res = query.getwikicfp(input)  # fpl
+
+    if res == 'error' or res == 'source not available':
+        print(res)
+        return
+
     removeFalsePostivesEarly(res, input)
+
+    if len(res) == 0:
+        print('no results')
+        return
 
     for index in range(len(res)):
         # TODO figure out a way so that ordinals are assigned to the correct event if more than one are in the title
@@ -32,7 +42,7 @@ def buildFromRESTful(ll, nlp, input):
         if acronym is None:
             acronym = 'missing'
         acronym = re.sub(r'[0-9]', r'', acronym)
-        acronym.replace(" ", "")
+        acronym = acronym.replace(" ", "")
 
         ordinal = find_ordinal(found_entities, res, index)
         if ordinal is None:
@@ -66,5 +76,6 @@ def buildFromRESTful(ll, nlp, input):
     print(tabulate(fix_ordinal(table), headers="keys"))
     freq(table)
     print(tabulate(addGhostEvents(fix_ordinal(table), 'annual'), headers="keys"))
+    return table
 
 

@@ -16,7 +16,9 @@ import proceedingsDotComTable
 # Press Umschalt+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 from src import confrefTable
+from src.mergeTables import merge_tables
 from src.neo_4j import neo
+from src.tableToGraph import add_table_to_graph
 
 
 def print_hi(name):
@@ -82,22 +84,40 @@ def limited_hardcoded_graph_addition_demo(neo_DB):
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
 
+
     print("Have you done everything described in meo_4j.py? If so remove the print and following sys.exit()")
     sys.exit()
 
-    neo_DB = neo("bolt://127.0.0.1:7687", "neo4j", "kgl")
-    limited_hardcoded_graph_addition_demo(neo_DB)
-    neo_DB.close()
+    # neo_DB = neo("bolt://127.0.0.1:7687", "neo4j", "kgl")
+    # limited_hardcoded_graph_addition_demo(neo_DB)
+    # neo_DB.close()
 
-    sys.exit()
+    # sys.exit()
 
     ll = location.LocationLookup()  # initialize locationlookup
     nlp = spacy.load("en_core_web_trf")   # run "python -m spacy download en_core_web_trf" if it fails.
 
+    # dblpTable.buildFromRESTful(ll, nlp, 'HPCC')
+    dblpTable.buildFromRESTful(ll, nlp, 'HPCC')
+    proceedingsDotComTable.buildFromXLSX(ll, nlp, 'HPCC')
+    confrefTable.buildFromRESTful(ll, nlp, 'HPCC')
+    wikicfpTable.buildFromRESTful(ll, nlp, 'HPCC')
+
+    # lod = dblpTable.buildFromRESTful(ll, nlp, 'HPCC')
+    # print(tabulate(lod, headers="keys"))
+    # add_table_to_graph(lod, neo_DB)
+    # neo_DB.close()
+    # list_of_sources = [proceedingsDotComTable.buildFromXLSX(ll, nlp, 'HPCC'), dblpTable.buildFromRESTful(ll, nlp, 'HPCC'), confrefTable.buildFromRESTful(ll, nlp, 'HPCC')]
+    # list_of_trust = [9, 10, 7]
+
+    # lod = merge_tables(list_of_sources, list_of_trust)
+
+    #  add_table_to_graph(lod, neo_DB)
+    # neo_DB.close()
     # proceedingsDotComTable.buildFromXLSX(ll, nlp, 'HPCC')
     # confrefTable.buildFromRESTful(ll, nlp, 'HPCC')
     # wikicfpTable.buildFromRESTful(ll, nlp, 'HPCC')
-    dblpTable.buildFromRESTful(ll, nlp, 'HPCC')
+    # dblpTable.buildFromRESTful(ll, nlp, 'HPCC')
     # query.test()
     sys.exit()
     # s = "IT - 72(Campania)"
