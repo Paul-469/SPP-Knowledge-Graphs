@@ -9,6 +9,8 @@ spacy==3.2.1
 dataclasses
 requests
 neo4j
+pyFlaskBootstrap4
+
 
 lxml
 bs4
