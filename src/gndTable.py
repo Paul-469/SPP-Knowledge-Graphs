@@ -36,7 +36,7 @@ def buildFromRESTful(ll,nlp,input):
             acronym = input
 
         acronym = re.sub(r'[0-9]', r'', acronym)
-        acronym.replace(" ", "")
+        acronym = acronym.replace(" ", "")
 
         ordinal = find_ordinal(found_entities, res, index)
         if ordinal is None:

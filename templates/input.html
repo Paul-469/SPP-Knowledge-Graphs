@@ -1,0 +1,18 @@
+{% extends 'fb4common/base.html' %}
+{% import 'macros.html' as macros %}
+{% from 'bootstrap/form.html' import render_form, render_field, render_form_row %}
+{{ macros.header(title) }}
+{% if menuList %}{{ macros.menu(menuList) }}{%endif %}
+{% if content is not none %}{{ content|safe }}{%endif %}
+{% if error is not none %}<span style="color:red">Error: {{ error }}</span>{%endif %}
+{{ macros.footer() }}
+
+
+{% block content %}
+
+    <div style="text-align: center;"><h1>Search for Event-Series</h1></div>
+        <!-- <p>{% raw %}{{ render_form(form, button_style='success', button_size='block') }}{% endraw %}</p> -->
+        {{ render_form(form, button_style='success', button_size='block')}}
+
+
+{% endblock %}

@@ -41,7 +41,9 @@ def merge_tables(list_of_sources, list_of_trust):
          'country': 'null', 'region': 'null', 'city': 'null', 'gnd': 'null', 'dblp': 'null', 'wikicfpID': 'null',
          'or': 'null', 'wikidata': 'null', 'confref': 'null', 'seriesAcronym': 'null', 'title': 'null'}]
 
-    a = 0
+    if len(with_ord_integrity) == 0:
+        return
+
     # merging part 1
     while True:
         entry_mem = []
@@ -65,9 +67,6 @@ def merge_tables(list_of_sources, list_of_trust):
         output.append(merge(to_merge, to_merge_trust))
 
         if len(with_ord_integrity) == 0:
-            break
-        a = a + 1
-        if a == 20:
             break
 
     print(tabulate(output, headers="keys"))
@@ -289,6 +288,7 @@ def merge(to_merge, trust):
                 current_value.append(to_merge[x]['confref'])
                 current_trust.append(trust[x])
     confref = current_value[index_with_highest_value(current_trust)]
+    print(confref)
 
     # seriesAcronym
     current_value = ['null']
@@ -335,7 +335,7 @@ def index_with_highest_value(list):
         if highest < list[x]:
             highest = list[x]
             index = x
-    print(index)
+    # print(index)
     return index
 
 
