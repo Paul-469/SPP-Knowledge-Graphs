@@ -10,12 +10,12 @@
 
 {% block content %}
 
-    <div style="text-align: center;"><h1>Search for Event-Series</h1></div>
+    <div style="text-align: center;"><h1>Search for Event-Series</h1>
         <!-- <p>{% raw %}{{ render_form(form, button_style='success', button_size='block') }}{% endraw %}</p> -->
-        {{ render_form(form, button_style='success', button_size='block', method="post", action=url_for('test_table', msg=request.form['query']) ) }}
-        <!-- <input type="text" placeholder="Type something..." id="myInput"> -->
-        <!-- <button type="button" onclick="getInputValue();">Get Value</button> -->
-
+        <!-- {{ render_form(form, button_style='success', button_size='block', method="post", action=url_for('test_table', msg=request.form['query']) ) }} -->
+        <input type="text" placeholder="Enter Acronym here" id="query">
+        <button type="button" onclick="getInputValue();">Search</button>
+        </div>
 
 
 {% endblock %}
@@ -29,11 +29,22 @@
     	$('.table').DataTable();
 	});
 	function getInputValue(){
+
             // Selecting the input element and get its value
-            var inputVal = document.getElementById("myInput").value;
+            var inputVal = document.getElementById('query').value;
+
+            var current_url = window.location.href
+
+            var query_url = ''
+            if (current_url.includes('table/')){
+                query_url = inputVal
+            }
+            else{
+                query_url = 'table/'.concat( inputVal);
+            }
 
             // Displaying the value
-            alert(inputVal);
+            open(query_url, "_self")
         };
     </script>
 {% endblock %}
