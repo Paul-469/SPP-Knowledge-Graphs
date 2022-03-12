@@ -81,14 +81,16 @@ class HelloWeb(AppWrap):
         '''
         self.db.drop_all()
         self.db.create_all()
-        ll = location.LocationLookup()  # initialize locationlookup
-        nlp = spacy.load("en_core_web_trf")  # run "python -m spacy download en_core_web_trf" if it fails.
+
+        # Testing
+        # ll = location.LocationLookup()  # initialize locationlookup
+        # nlp = spacy.load("en_core_web_trf")  # run "python -m spacy download en_core_web_trf" if it fails.
 
 
-        res = [dblpTable.buildFromRESTful(ll, nlp, 'HPCC')]
-        list = [1]
-        res = merge_tables(res,list)
-        dictToMessages(res, self)
+        # res = [dblpTable.buildFromRESTful(ll, nlp, 'HPCC')]
+        # list = [1]
+        # res = merge_tables(res,list)
+        # dictToMessages(res, self)
 
     def message_delete(self, message_id):
         message = Message.query.get(message_id)
@@ -135,6 +137,14 @@ class HelloWeb(AppWrap):
         '''
         test table
         '''
+
+        ll = location.LocationLookup()  # initialize locationlookup
+        nlp = spacy.load("en_core_web_trf")  # run "python -m spacy download en_core_web_trf" if it fails.
+
+        res = [dblpTable.buildFromRESTful(ll, nlp, msg)]
+        list = [1]
+        res = merge_tables(res, list)
+        dictToMessages(res, self)
 
         page = request.args.get('page', 1, type=int)
         pagination = Message.query.paginate(page, per_page=20)
@@ -200,7 +210,6 @@ class ButtonForm(FlaskForm):
     Search = SubmitField()
 
 
-
 def dictToMessages(ldict, app):
     for x in range(1, len(ldict)):
 
@@ -229,6 +238,13 @@ def dictToMessages(ldict, app):
 
 
 if __name__ == '__main__':
+    parser = helloWeb.getParser("Flask + Bootstrap4 Demo Web Application")
+    args = parser.parse_args()
+    helloWeb.optionalDebug(args)
+    helloWeb.run(args)
+
+
+def run():
     parser = helloWeb.getParser("Flask + Bootstrap4 Demo Web Application")
     args = parser.parse_args()
     helloWeb.optionalDebug(args)
