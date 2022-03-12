@@ -12,7 +12,28 @@
 
     <div style="text-align: center;"><h1>Search for Event-Series</h1></div>
         <!-- <p>{% raw %}{{ render_form(form, button_style='success', button_size='block') }}{% endraw %}</p> -->
-        {{ render_form(form, button_style='success', button_size='block')}}
+        {{ render_form(form, button_style='success', button_size='block', method="post", action=url_for('test_table', msg=request.form['query']) ) }}
+        <!-- <input type="text" placeholder="Type something..." id="myInput"> -->
+        <!-- <button type="button" onclick="getInputValue();">Get Value</button> -->
 
 
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.js"></script>
+    <script type="text/javascript">
+    $(document).ready(function() {
+    	$('.table').DataTable();
+	});
+	function getInputValue(){
+            // Selecting the input element and get its value
+            var inputVal = document.getElementById("myInput").value;
+
+            // Displaying the value
+            alert(inputVal);
+        };
+    </script>
 {% endblock %}

@@ -14,7 +14,7 @@ from mergeTables import merge_tables
 
 
 class Message2(db.Model):
-    id = Column(types.Integer, primary_key=True)
+    id = Column(types.Text, primary_key=True)
     text = Column(types.Text, nullable=False)
     author = Column(types.String(100), nullable=False)
     category = Column(types.String(100), nullable=False)
@@ -59,9 +59,17 @@ class HelloWeb(AppWrap):
         def delete_message(message_id):
             return self.message_delete(message_id)
 
-        @self.app.route('/table')
-        def test_table():
-            return self.table()
+
+        @self.app.route('/table/<msg>', methods=['GET', 'POST'])
+        def test_table(msg):
+            print(msg)
+            print(type(msg))
+            return self.table(msg)
+
+
+        @self.app.route('/table/', methods=['GET', 'POST'])
+        def test_table1():
+            return self.table1()
 
         @self.app.route('/')
         def home():
@@ -123,10 +131,11 @@ class HelloWeb(AppWrap):
             self.db.session.add(m)
         self.db.session.commit()
 
-    def table(self):
+    def table(self, msg):
         '''
         test table
         '''
+
         page = request.args.get('page', 1, type=int)
         pagination = Message.query.paginate(page, per_page=20)
         messages = pagination.items
@@ -137,6 +146,14 @@ class HelloWeb(AppWrap):
 
 
     def home(self):
+        '''
+        render the home page of the HelloWeb application
+        '''
+        html = render_template("input.html", title="HelloWeb demo application",
+                               content="Welcome to the Flask + Bootstrap4 Demo web application", form=ButtonForm(), error=None)
+        return html
+
+    def table1(self):
         '''
         render the home page of the HelloWeb application
         '''
@@ -181,6 +198,7 @@ class Message(db.Model):
 class ButtonForm(FlaskForm):
     query = StringField('Query:', validators=[DataRequired(), Length(1, 20)])
     Search = SubmitField()
+
 
 
 def dictToMessages(ldict, app):
