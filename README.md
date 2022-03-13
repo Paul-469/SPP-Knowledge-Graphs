@@ -1,8 +1,8 @@
 # SPP-Knowledge-Graphs
 
-[![License](https://img.shields.io/github/license/WolfgangFahl/ConferenceCorpus.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![License](https://img.shields.io/github/license/WolfgangFahl/ConferenceCorpus.svg)](https://www.apache.org/licenses/LICENSE-2.0) <br/>
 
-##About
+## About
 
 This is the repository is part of the RWTH Knowledge Graphs Lab. Created by the event-series freestyle group. <br/>
 <br/>
