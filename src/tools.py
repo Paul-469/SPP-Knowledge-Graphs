@@ -949,6 +949,27 @@ def isThereMoreThanOne(dict):
     return out
 
 
+# removes all entries from a lod that have broken or no ordinals and returns both
+def remove_entries_without_ordinals(lod):
+    out = lod
+    out_inverted = [{'acronym': 'null', 'acronym2': 'null', 'ordinal': 'null', 'year': 'null',
+                                           'from': 'null', 'to': 'null', 'country': 'null', 'region': 'null',
+                                           'city': 'null', 'gnd': 'null', 'dblp': 'null', 'wikicfpID': 'null',
+                                           'or': 'null', 'wikidata': 'null', 'confref': 'null', 'seriesAcronym': 'null',
+                                           'title': 'null'}]
+    to_remove = []
+    for x in range(1, len(lod)):
+        if not type(lod[x]['ordinal']) == int:
+            if not lod[x]['ordinal'].isnumeric():
+                to_remove.append(x)
+
+    for x in range(len(to_remove)):
+        out_inverted.append(out[to_remove[x] - x])
+        del out[to_remove[x] - x]
+
+    return out, out_inverted
+
+
 # sorts the list of dicts by year but keeps the null line in place and put every event with no year entry at the top
 def sortDictByYear(dict):
     out = [dict[0]]

@@ -1,5 +1,6 @@
 from tabulate import tabulate
 
+import tools
 from src.tools import ordinal_integrity
 
 
@@ -32,12 +33,19 @@ def merge_tables(list_of_sources, list_of_trust):
         with_ord_integrity.append(list_of_sources[with_ord_integrity_index[x]])
         with_ord_integrity_trust.append(list_of_trust[with_ord_integrity_index[x]])
 
-    # List of entries and trust for without
+    # List of entries and trust for without or add the entries with ordinals back
     without_ord_integrity = []
     without_ord_integrity_trust = []
     for x in range(len(without_ord_integrity_index)):
-        without_ord_integrity.append(list_of_sources[without_ord_integrity_index[x]])
-        without_ord_integrity_trust.append(list_of_trust[without_ord_integrity_index[x]])
+        split = tools.remove_entries_without_ordinals(list_of_sources[without_ord_integrity_index[x]])
+        with_ord = split[0]
+        without_ord = split[1]
+        if len(with_ord) > 1:
+            with_ord_integrity.append(with_ord)
+            with_ord_integrity_trust.append(list_of_trust[without_ord_integrity_index[x]])
+        if len(without_ord) > 1:
+            without_ord_integrity.append(without_ord)
+            without_ord_integrity_trust.append(list_of_trust[without_ord_integrity_index[x]])
 
     # initialize output
     output = [

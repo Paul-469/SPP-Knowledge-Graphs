@@ -38,7 +38,6 @@ if __name__ == '__main__':
     sys.exit()
 
     # neo_DB = neo("bolt://127.0.0.1:7687", "neo4j", "kgl")
-    # limited_hardcoded_graph_addition_demo(neo_DB)
     # neo_DB.close()
 
     #sys.exit()
@@ -111,8 +110,3 @@ if __name__ == '__main__':
     # testQuerryToTable.ordinalToInt('101th')
     # testQuerryToTable.ordinalToInt('fourth')
     # testQuerryToTable.string_distance("ghaogiadfghobdfahgoiadsgdfaigWort1123456789Wort2dföoashgioa", "wort1", "wort2")
-
-
-
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/

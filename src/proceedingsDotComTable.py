@@ -39,7 +39,7 @@ def buildFromXLSX(ll, nlp, input):
     if res == 'error' or res == 'source not available':
         print(res)
         return
-    # print(tabulate(res, headers="keys"))
+    print(tabulate(res, headers="keys"))
     # removeFalsePostivesEarly(res, input)
 
     if len(res) == 0:

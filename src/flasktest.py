@@ -6,6 +6,7 @@ from flask_wtf import FlaskForm
 from sqlalchemy import Column
 import sqlalchemy.types as types
 from flask import redirect,render_template, request, flash, Markup, url_for, abort
+from tabulate import tabulate
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired, Length
 
@@ -124,7 +125,7 @@ class HelloWeb(AppWrap):
             return f'Viewing {message_id} with text "{message.text}". Return to <a href="/table">table</a>.'
         return f'Could not view message {message_id} as it does not exist. Return to <a href="/table">table</a>.'
 
-    def initMessages(self, limit=20):
+    def initMessages(self, limit=250):
         '''
         create an initial set of message with the given limit
         Args:
@@ -165,6 +166,8 @@ class HelloWeb(AppWrap):
 
         trust_list = [10, 9, 7, 7, 7]
         res = merge_tables(res, trust_list)
+        print("res:")
+        print(tabulate(res, headers="keys"))
 
         neo_DB = neo("bolt://127.0.0.1:7687", "neo4j", "kgl")
         tableToGraph.add_table_to_graph(res, neo_DB)
@@ -174,7 +177,7 @@ class HelloWeb(AppWrap):
 
         page = request.args.get('page', 1, type=int)
 
-        pagination = Message.query.paginate(page, per_page=20)
+        pagination = Message.query.paginate(page, per_page=200)
         messages = pagination.items
         # print(pagination.items)
         titles = [('id', '#'), ('text', 'Message'), ('author', 'Author'), ('category', 'Category'), ('draft', 'Draft'),
@@ -215,7 +218,8 @@ class LoginForm(FlaskForm):
 
 
 class Message(db.Model):
-    acronym = Column(types.String(100), primary_key=True)
+    ResponseNo  = Column(types.Integer(), primary_key=True)
+    acronym = Column(types.String(100), nullable=True)
     acronym2 = Column(types.String(100), nullable=True)
     ordinal = Column(types.String(100), nullable=True)
     year = Column(types.String(100), nullable=True)
@@ -240,9 +244,16 @@ class ButtonForm(FlaskForm):
 
 
 def dictToMessages(ldict, app):
+    if ldict is None:
+        print("no result after merging")
+        return
+    print("in dictToMessage")
+    print(tabulate(ldict, headers="keys"))
+
     for x in range(1, len(ldict)):
 
         m = Message(
+            ResponseNo = x,
             acronym=ldict[x]['acronym'],
             acronym2=ldict[x]['acronym2'],
             ordinal=ldict[x]['ordinal'],

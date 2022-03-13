@@ -1,7 +1,3 @@
-from tabulate import tabulate
-
-from src import dblpTable
-
 
 def add_table_to_graph(lod, neo_DB):
 
