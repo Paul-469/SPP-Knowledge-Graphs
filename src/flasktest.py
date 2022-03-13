@@ -9,7 +9,11 @@ from flask import redirect,render_template, request, flash, Markup, url_for, abo
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired, Length
 
+import confrefTable
 import dblpTable
+import gndTable
+import proceedingsDotComTable
+import wikicfpTable
 from mergeTables import merge_tables
 
 
@@ -43,6 +47,10 @@ class HelloWeb(AppWrap):
         self.app.config['BOOTSTRAP_BTN_STYLE'] = 'primary'
         self.app.config['BOOTSTRAP_BTN_SIZE'] = 'sm'
 
+        #
+        # self.ll = location.LocationLookup()  # initialize locationlookup
+        # self.nlp = spacy.load("en_core_web_trf")  # run "python -m spacy download en_core_web_trf" if it fails.
+
         @self.app.before_first_request
         def before_first_request_func():
             self.initDB()
@@ -63,7 +71,7 @@ class HelloWeb(AppWrap):
         @self.app.route('/table/<msg>', methods=['GET', 'POST'])
         def test_table(msg):
             print(msg)
-            print(type(msg))
+            # print(type(msg))
             return self.table(msg)
 
 
@@ -140,19 +148,33 @@ class HelloWeb(AppWrap):
 
         ll = location.LocationLookup()  # initialize locationlookup
         nlp = spacy.load("en_core_web_trf")  # run "python -m spacy download en_core_web_trf" if it fails.
+        res = [dblpTable.buildFromRESTful(ll, nlp, msg),
+               proceedingsDotComTable.buildFromXLSX(ll, nlp, msg),
+               wikicfpTable.buildFromRESTful(ll, nlp, msg), gndTable.buildFromRESTful(ll, nlp, msg),
+               confrefTable.buildFromRESTful(ll, nlp, msg)]
+        # res = [dblpTable.buildFromRESTful(self.ll, self.nlp, msg),
+        #        proceedingsDotComTable.buildFromXLSX(self.ll, self.nlp, msg),
+        #        wikicfpTable.buildFromRESTful(self.ll, self.nlp, msg), gndTable.buildFromRESTful(self.ll, self.nlp, msg),
+        #        confrefTable.buildFromRESTful(self.ll, self.nlp, msg)]
 
-        res = [dblpTable.buildFromRESTful(ll, nlp, msg)]
-        list = [1]
-        res = merge_tables(res, list)
+
+        trust_list = [10, 9, 7, 7, 7]
+        res = merge_tables(res, trust_list)
+
         dictToMessages(res, self)
 
         page = request.args.get('page', 1, type=int)
+
         pagination = Message.query.paginate(page, per_page=20)
         messages = pagination.items
+        # print(pagination.items)
         titles = [('id', '#'), ('text', 'Message'), ('author', 'Author'), ('category', 'Category'), ('draft', 'Draft'),
                   ('create_time', 'Create Time')]
-        return render_template('table.html', messages=messages, titles=None)
 
+        self.db.drop_all()
+        self.db.create_all()
+
+        return render_template('table.html', messages=messages, titles=None)
 
 
     def home(self):
@@ -184,6 +206,7 @@ class LoginForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired(), Length(8, 150)])
     rememberMe = BooleanField('Remember me')
     submit = SubmitField('Login')
+
 
 class Message(db.Model):
     acronym = Column(types.String(100), primary_key=True)

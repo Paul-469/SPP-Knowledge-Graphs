@@ -76,6 +76,7 @@ def buildFromRESTful(ll, nlp, input):
          'country': 'null', 'region': 'null', 'city': 'null', 'gnd': 'null', 'dblp': 'null', 'wikicfpID': 'null',
          'or': 'null', 'wikidata': 'null', 'confref': 'null', 'seriesAcronym': 'null', 'title': 'null'}]
 
+    print("dblp")
     res = query.getdblp(input)  # fpl
     if res == 'error' or res == 'source not available':
         print(res)

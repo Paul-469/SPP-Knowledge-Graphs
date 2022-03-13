@@ -14,6 +14,7 @@ def buildFromRESTful(ll, nlp, input):
          'country': 'null', 'region': 'null', 'city': 'null', 'gnd': 'null', 'dblp': 'null', 'wikicfpID': 'null',
          'or': 'null', 'wikidata': 'null', 'confref': 'null', 'seriesAcronym': 'null', 'title': 'null'}]
 
+    print("wikicfp")
     res = query.getwikicfp(input)  # fpl
 
     if res == 'error' or res == 'source not available':
@@ -74,8 +75,8 @@ def buildFromRESTful(ll, nlp, input):
     # print(tabulate(table, headers="keys"))
     print('\n')
     print(tabulate(fix_ordinal(table), headers="keys"))
-    freq(table)
-    print(tabulate(addGhostEvents(fix_ordinal(table), 'annual'), headers="keys"))
+    # freq(table)
+    # print(tabulate(addGhostEvents(fix_ordinal(table), 'annual'), headers="keys"))
     return table
 
 

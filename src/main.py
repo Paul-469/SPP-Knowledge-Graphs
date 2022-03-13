@@ -113,6 +113,9 @@ if __name__ == '__main__':
     # print(tabulate(lod, headers="keys"))
     # add_table_to_graph(lod, neo_DB)
     # neo_DB.close()
+    wikicfpTable.buildFromRESTful(ll, nlp, 'bicob')
+    sys.exit()
+
     list_of_sources = [confrefTable.buildFromRESTful(ll, nlp, 'HPCC')]
     list_of_trust = [1]
     lod = merge_tables(list_of_sources, list_of_trust)

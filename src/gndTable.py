@@ -7,13 +7,20 @@ from src.tools import find_ordinal, get_from_to, FTDate, location_finder, fix_or
     removeFalsePostivesEarly, freq, addGhostEvents, sortDictByYear, findWholeWord
 import re
 
+
 def buildFromRESTful(ll,nlp,input):
     table = [
         {'acronym': 'null', 'acronym2': 'null', 'ordinal': 'null', 'year': 'null', 'from': 'null', 'to': 'null',
          'country': 'null', 'region': 'null', 'city': 'null', 'gnd': 'null', 'dblp': 'null', 'wikicfpID': 'null',
          'or': 'null', 'wikidata': 'null', 'confref': 'null', 'seriesAcronym': 'null', 'title': 'null'}]
 
+    print("gnd")
     res = query.getgnd(input)  # fpl
+
+    if res == 'error' or res == 'source not available':
+        print(res)
+        return
+
     removeFalsePostivesEarly(res, input)
 
     for index in range(len(res)):

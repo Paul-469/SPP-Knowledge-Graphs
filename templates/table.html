@@ -2,7 +2,13 @@
 {% from 'bootstrap/table.html' import render_table %}
 
 {% block content %}
-<h1>Result</h1>
+
+    <div style="text-align: center;">
+        <h1>Results:</h1>
+            Search by a different acronym:<br>
+            <input type="text" placeholder="Enter Acronym here" id="query">
+            <button type="button" onclick="getInputValue();">Search</button>
+    </div>
 
 {{ render_table(messages) }}
 <!--
@@ -25,3 +31,29 @@
                 delete_url=url_for('delete_message', message_id=':primary_key')) }}
 {% endblock %}
 //-->
+
+
+{% block scripts %}
+    {{ super() }}
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.js"></script>
+    <script type="text/javascript">
+    $(document).ready(function() {
+    	$('.table').DataTable();
+	});
+	function getInputValue(){
+
+            // Selecting the input element and get its value
+            var inputVal = document.getElementById('query').value;
+
+            var current_url = window.location.href
+
+            var query_url = current_url.split('table/')[0]
+
+            query_url = query_url.concat('table/', inputVal);
+
+            // Displaying the value
+            open(query_url, "_self")
+        };
+    </script>
+{% endblock %}

@@ -10,16 +10,20 @@ def merge_tables(list_of_sources, list_of_trust):
         print("Error in the merging input")
         return
 
-    # We split our inputs into a list with intact ordinals and one without
+    # We split our inputs into a list with intact ordinals and one without as well as remove empty
 
     # First e which is which
     with_ord_integrity_index = []
     without_ord_integrity_index = []
+    is_none = []
     for x in range(len(list_of_sources)):
-        if ordinal_integrity(list_of_sources[x]):
-            with_ord_integrity_index.append(x)
+        if list_of_sources[x] is None:
+            is_none.append(x)
         else:
-            without_ord_integrity_index.append(x)
+            if ordinal_integrity(list_of_sources[x]):
+                with_ord_integrity_index.append(x)
+            else:
+                without_ord_integrity_index.append(x)
 
     # List of entries and trust for with
     with_ord_integrity = []
