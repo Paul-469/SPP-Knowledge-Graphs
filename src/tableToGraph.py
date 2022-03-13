@@ -5,6 +5,10 @@ from src import dblpTable
 
 def add_table_to_graph(lod, neo_DB):
 
+    if lod is None:
+        print("No result")
+        return
+
     for x in range(1, len(lod)):
 
         # First we determine if vital Info is present else we don't add to graph

@@ -14,65 +14,10 @@ import wikicfpTable
 import gndTable
 import proceedingsDotComTable
 
-
-
-# Press Umschalt+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 from src import confrefTable
 from src.mergeTables import merge_tables
 from src.neo_4j import neo
 from src.tableToGraph import add_table_to_graph
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Strg+F8 to toggle the breakpoint.
-
-
-def limited_hardcoded_graph_addition_demo(neo_DB):
-    ordinal = "11"
-    acronym = "hpcc-2009"
-    year = "2009"
-    from_date = "25.06.2009"
-    to_date = "27.06.2009"
-    city = "Seoul"
-    region = "Seoul"
-    country = "South Korea"
-    series_acronym = "hpcc"
-    title = "11th IEEE International Conference on High Performance Computing and Communications, HPCC 2009, 25-27 June 2009, Seoul, Korea"
-
-    neo_DB.add_node(title, "Event")
-    neo_DB.add_two_nodes(title, "Event", ordinal, "ordinal", "is")
-    neo_DB.add_two_nodes(title, "Event", acronym, "event_acronym", "acronym")
-    neo_DB.add_two_nodes(title, "Event", year, "year", "in")
-    neo_DB.add_two_nodes(title, "Event", from_date, "from_date", "from")
-    neo_DB.add_two_nodes(title, "Event", to_date, "to_date", "to")
-    neo_DB.add_two_nodes(title, "Event", city, "city", "in")
-    neo_DB.add_two_nodes(title, "Event", region, "region", "in")
-    neo_DB.add_two_nodes(title, "Event", country, "country", "in")
-    neo_DB.add_two_nodes(title, "Event", series_acronym, "series", "part_of")
-
-    ordinal = "12"
-    acronym = "hpcc-2010"
-    year = "2010"
-    from_date = "01.09.2010"
-    to_date = "03.09.2010"
-    city = "Melbourne"
-    region = "Victoria"
-    country = "Australia"
-    series_acronym = "hpcc"
-    title = "12th IEEE International Conference on High Performance Computing and Communications, HPCC 2010, 1-3 September 2010, Melbourne, Australia"
-
-    neo_DB.add_node(title, "Event")
-    neo_DB.add_two_nodes(title, "Event", ordinal, "ordinal", "is")
-    neo_DB.add_two_nodes(title, "Event", acronym, "event_acronym", "acronym")
-    neo_DB.add_two_nodes(title, "Event", year, "year", "in")
-    neo_DB.add_two_nodes(title, "Event", from_date, "from_date", "from")
-    neo_DB.add_two_nodes(title, "Event", to_date, "to_date", "to")
-    neo_DB.add_two_nodes(title, "Event", city, "city", "in")
-    neo_DB.add_two_nodes(title, "Event", region, "region", "in")
-    neo_DB.add_two_nodes(title, "Event", country, "country", "in")
-    neo_DB.add_two_nodes(title, "Event", series_acronym, "series", "part_of")
 
 
 # TODO consider exchanging title with event title and series title

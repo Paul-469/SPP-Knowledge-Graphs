@@ -12,7 +12,7 @@ def merge_tables(list_of_sources, list_of_trust):
 
     # We split our inputs into a list with intact ordinals and one without as well as remove empty
 
-    # First e which is which
+    # First determine which is which
     with_ord_integrity_index = []
     without_ord_integrity_index = []
     is_none = []
