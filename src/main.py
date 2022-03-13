@@ -4,18 +4,16 @@ import os
 import spacy
 from tabulate import tabulate
 
-import excelExtract
-import corpusTesting
-import testQuerryToTable
 import dblpTable
 import corpusTools
 from corpus import location
-import query
 import sys
+
+import flasktest
 import wikicfpTable
 import gndTable
 import proceedingsDotComTable
-import pandas as pd
+
 
 
 # Press Umschalt+F10 to execute it or replace it with your code.
@@ -91,14 +89,17 @@ def limited_hardcoded_graph_addition_demo(neo_DB):
 
 if __name__ == '__main__':
 
-    # print("Have you done everything described in meo_4j.py? If so remove the print and following sys.exit()")
-    # sys.exit()
+    print("Have you done everything described in meo_4j.py? If so remove the print and following sys.exit()")
+    sys.exit()
 
     # neo_DB = neo("bolt://127.0.0.1:7687", "neo4j", "kgl")
     # limited_hardcoded_graph_addition_demo(neo_DB)
     # neo_DB.close()
 
     #sys.exit()
+
+    flasktest.run()
+    sys.exit()
 
     ll = location.LocationLookup()  # initialize locationlookup
     nlp = spacy.load("en_core_web_trf")   # run "python -m spacy download en_core_web_trf" if it fails.

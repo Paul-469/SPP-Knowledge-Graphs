@@ -13,8 +13,10 @@ import confrefTable
 import dblpTable
 import gndTable
 import proceedingsDotComTable
+import tableToGraph
 import wikicfpTable
 from mergeTables import merge_tables
+from neo_4j import neo
 
 
 class Message2(db.Model):
@@ -146,6 +148,9 @@ class HelloWeb(AppWrap):
         test table
         '''
 
+        self.db.drop_all()
+        self.db.create_all()
+
         ll = location.LocationLookup()  # initialize locationlookup
         nlp = spacy.load("en_core_web_trf")  # run "python -m spacy download en_core_web_trf" if it fails.
         res = [dblpTable.buildFromRESTful(ll, nlp, msg),
@@ -161,6 +166,10 @@ class HelloWeb(AppWrap):
         trust_list = [10, 9, 7, 7, 7]
         res = merge_tables(res, trust_list)
 
+        neo_DB = neo("bolt://127.0.0.1:7687", "neo4j", "kgl")
+        tableToGraph.add_table_to_graph(res, neo_DB)
+        neo_DB.close()
+
         dictToMessages(res, self)
 
         page = request.args.get('page', 1, type=int)
@@ -170,9 +179,6 @@ class HelloWeb(AppWrap):
         # print(pagination.items)
         titles = [('id', '#'), ('text', 'Message'), ('author', 'Author'), ('category', 'Category'), ('draft', 'Draft'),
                   ('create_time', 'Create Time')]
-
-        self.db.drop_all()
-        self.db.create_all()
 
         return render_template('table.html', messages=messages, titles=None)
 
