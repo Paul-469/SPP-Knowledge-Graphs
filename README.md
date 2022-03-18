@@ -21,11 +21,7 @@ please consult official Neo4j resources.
 
 * ConferenceCorpus (ver. 0.0.26)
 * tabulate
-* pylodstorage
 * openpyxl
-* geograpy3
-* nominatim
-* OSMPythonTools (ver. 0.3.0)
 * spacy (ver. 3.2.1)
 * dataclasses
 * requests
