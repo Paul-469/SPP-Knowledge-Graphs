@@ -58,6 +58,7 @@ def merge_tables(list_of_sources, list_of_trust):
 
     # merging part 1
     while True:
+        print(1)
         entry_mem = []
         for x in range(len(with_ord_integrity)):
             entry_mem.append(with_ord_integrity[x][1])
@@ -72,9 +73,13 @@ def merge_tables(list_of_sources, list_of_trust):
             to_merge_trust.append(with_ord_integrity_trust[to_merge_index[x]])
             del (with_ord_integrity[to_merge_index[x]])[1]
 
+        to_remove = []
         for x in range(len(to_merge_index)):
-            if len(with_ord_integrity[to_merge_index[x] - x]) < 2:
-                del with_ord_integrity[to_merge_index[x] - x]
+            if len(with_ord_integrity[to_merge_index[x]]) < 2:
+                to_remove.append(x)
+
+        for x in range(len(to_remove)):
+            del with_ord_integrity[to_remove[x] - x]
 
         output.append(merge(to_merge, to_merge_trust))
 

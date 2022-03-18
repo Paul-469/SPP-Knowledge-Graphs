@@ -34,6 +34,14 @@ from src.tableToGraph import add_table_to_graph
 
 if __name__ == '__main__':
 
+    flasktest.run()
+    sys.exit()
+
+    ll = location.LocationLookup()  # initialize locationlookup
+    nlp = spacy.load("en_core_web_trf")  # run "python -m spacy download en_core_web_trf" if it fails.
+
+    dblpTable.buildFromRESTful(ll, nlp, 'HPCC')
+
     print("Have you done everything described in meo_4j.py? If so remove the print and following sys.exit()")
     sys.exit()
 

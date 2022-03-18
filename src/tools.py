@@ -701,7 +701,7 @@ def removeFalsePostivesEarly(res, input):
 
     to_remove = []
     for x in range(len(res)):
-        if findWholeWord(input)(res[x][acronym]) is None:
+        if findWholeWord(input)(res[x][acronym]) is None or ("IEEE" in res[x][acronym] and not "IEEE" in input):
             to_remove.append(x)
 
     for x in range(len(to_remove)):
