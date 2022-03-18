@@ -11,7 +11,7 @@ results should be represented in a knowledge-graph. For this reason this project
 
 #### Neo4j is required 
 In order for this project to function a Neo4j database with password "kgl" needs to be running locally at 
-bolt://127.0.0.1:7687.
+bolt://localhost:7687.
 <br/>
 
 Neo4j can be found [here](https://neo4j.com/download/?ref=get-started-dropdown-cta). For installation instructions
